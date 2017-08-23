@@ -1,0 +1,32 @@
+<html>
+<body>
+	<h2>Interface list</h2>
+	<div>
+		<p><a href="/">Home</a></p>
+		<table border="1">
+			<tr>
+			    <th>Interface</th>
+			    <th>Status</th>
+			    <th>Operation</th>
+			</tr>
+			#foreach ($r in $list.entrySet())
+			<tr>
+				<td>$r.key</td>
+				<td>
+					#if ($r.value.ruleStat.health < 7)
+					<span style="color:red;">Bad</span>
+					#elseif ($r.value.ruleStat.health < 9)
+					<span style="color:yellow;">General</span>
+					#else
+					<span style="color:green;">Good</span>
+					#end
+				</td>
+				<td><a href="/1.0/process/$r.key/status">Status</a>&nbsp;&nbsp;<a href="/1.0/process/$r.key/help">Help</a>
+				<form name="submitForm" action="/1.0/process/$r.key" method="POST"><a href="javascript:;" onclick="javascript:document.forms[0].submit();">Process</a></form>
+				</td>
+			</tr>	
+			#end
+		</table>
+	</div>
+</body>
+</html>

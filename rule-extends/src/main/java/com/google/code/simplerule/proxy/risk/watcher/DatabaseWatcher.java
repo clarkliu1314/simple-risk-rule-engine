@@ -1,0 +1,142 @@
+package com.google.code.simplerule.proxy.risk.watcher;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.google.code.simplerule.proxy.risk.dao.RegisterServerDao;
+import com.google.code.simplerule.proxy.risk.entity.RegisterServerEntity;
+import com.google.code.simplerule.proxy.risk.monitor.watcher.Watcher;
+
+/**
+ * 数据库监视器
+ * @author drizzt
+ *
+ */
+public class DatabaseWatcher implements Watcher {
+	protected Logger logger = LoggerFactory.getLogger(DatabaseWatcher.class);
+	
+	@Autowired
+	protected RegisterServerDao dao;
+	
+	@Override
+	public boolean register(String name, Map param) {
+		try {
+			RegisterServerEntity e = dao.getByName(name);
+			if (e == null) {
+				e = new RegisterServerEntity();
+				e.setName(name);
+				e.setIp(String.valueOf(param.get("ip")));
+				e.setPort(Integer.valueOf(String.valueOf(param.get("port"))));
+				e.setActive(1);
+				e.setParams(getParamString(param));
+				e.setLoginTime(new Date());
+			}
+			else {
+				e.setIp(String.valueOf(param.get("ip")));
+				e.setPort(Integer.valueOf(String.valueOf(param.get("port"))));
+				e.setActive(1);
+				e.setParams(getParamString(param));
+				e.setLoginTime(new Date());
+			}
+			dao.save(e);
+			return true;
+		} catch (Exception e) {
+			logger.error("Register " + name + " error.", e);
+			return false;
+		}
+	}
+
+	private String getParamString(Map param) {
+		StringBuffer sb = new StringBuffer();
+		if (param == null || param.size() < 1)
+			return "";
+		
+		Iterator iter = param.entrySet().iterator(); 
+		while (iter.hasNext()) {
+		    Map.Entry entry = (Map.Entry) iter.next(); 
+		    
+		    sb.append(entry.getKey().toString());
+		    sb.append("=");
+		    sb.append(entry.getValue());
+		    sb.append(";");
+		}
+		return sb.toString();
+	}
+
+	@Override
+	public void addParameters(String name, Map param) {
+		RegisterServerEntity e = dao.getByName(name);
+		if (e == null)
+			return;
+		
+		String p = e.getParams();
+		if (p == null || p.equals("")) {
+			p = "";
+		}
+		if (p.length() > 0 && !p.endsWith(";")) {
+			p += ";";
+		}
+		
+		e.setParams(p + getParamString(param));
+		
+		dao.save(e);
+	}
+
+	@Override
+	public String[] findWatchers() {
+		List<RegisterServerEntity> es = dao.findAll();
+		if (es == null || es.size() < 1)
+			return null;
+		
+		int size = es.size();
+		String[] ss = new String[size];
+		for (int i=0; i<size; i++) {
+			ss[i] = es.get(i).getName();
+		}
+		return ss;
+	}
+
+	@Override
+	public Map getParameters(String name) {
+		RegisterServerEntity e = dao.getByName(name);
+		if (e == null || e.getParams() == null || e.getParams().equals(""))
+			return null;
+		
+		return convertToMap(e.getParams());
+	}
+
+	private Map convertToMap(String params) {
+		String[] ss = params.split(";");
+		if (ss == null || ss.length < 1)
+			return null;
+		
+		Map p = new HashMap();
+		for (String s : ss) {
+			String[] sc = s.split("=");
+			if (sc == null || sc.length != 2)
+				continue;
+			
+			p.put(sc[0], sc[1]);
+		}
+		return p;
+	}
+
+	@Override
+	public void unregister(String name) {
+		RegisterServerEntity e = dao.getByName(name);
+		if (e == null)
+			return;
+		
+		e.setActive(0);
+		e.setLogoutTime(new Date());
+		dao.save(e);
+	}
+
+}

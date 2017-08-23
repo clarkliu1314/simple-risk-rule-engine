@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="RuleConditionMapper">
+	<resultMap id="RuleConditionMap" type="RuleConditionEntity">
+		<id column="ID" property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result column="RULE_ID" property="ruleId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result column="RISK_FACTOR" property="riskFactor" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="CHECK_CONDITION" property="checkCondition" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="CHECK_VALUE" property="checkValue" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="LOGICAL_OPERATOR" property="logicalOperator" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <result column="CONNECTOR" property="connector" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="RISK_FACTOR_PARAM" property="riskFactorParam" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    	<result column="RISK_CONVERTOR" property="riskConvertor" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    	<result column="EXTERNAL_PARAM" property="externalParam" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+    
+    <sql id="RuleConditionColumns">
+    	RULE_ID,
+    	RISK_CONVERTOR,
+    	RISK_FACTOR,
+    	CHECK_CONDITION,
+        CHECK_VALUE,
+        LOGICAL_OPERATOR,
+        CONNECTOR,
+        RISK_FACTOR_PARAM,
+        EXTERNAL_PARAM
+    </sql>
+    
+	<insert id="insert" useGeneratedKeys="true" parameterType="RuleConditionEntity">
+        insert into risk_rule_condition
+        (
+            <include refid="RuleConditionColumns"/>
+        )
+        values
+        (
+            #{ruleId},
+            #{riskConvertor},
+            #{riskFactor},
+            #{checkCondition},
+            #{checkValue},
+            #{logicalOperator},
+            #{connector},
+            #{riskFactorParam},
+            #{externalParam}
+        )
+    </insert>
+
+    <delete id="delete" parameterType="java.lang.Long">
+        delete from
+            risk_rule_condition
+        where
+            ID=#{id}
+    </delete>
+    
+    <delete id="deleteByRuleId" parameterType="java.lang.Long">
+        delete from
+            risk_rule_condition
+        where
+            RULE_ID=#{id}
+    </delete>
+
+    <select id="findByRuleId" parameterType="java.lang.Long" resultMap="RuleConditionMap">
+        select 
+        ID,
+		<include refid="RuleConditionColumns"/>
+        from risk_rule_condition 
+        where RULE_ID=#{ruleId}
+        order by ID
+    </select>
+
+ 	<select id="getById" parameterType="java.lang.Long" resultMap="RuleConditionMap">
+        select 
+        ID,
+		<include refid="RuleConditionColumns"/>
+		from risk_rule_condition
+		where
+            ID=#{id}
+    </select>
+</mapper>

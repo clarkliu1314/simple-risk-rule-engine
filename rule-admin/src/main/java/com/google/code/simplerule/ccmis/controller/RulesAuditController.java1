@@ -1,0 +1,145 @@
+package com.google.code.simplerule.ccmis.controller;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.google.code.simplerule.core.processor.ProxyRuleProcessor;
+import com.google.code.simplerule.core.rule.RiskFactor;
+import com.google.code.simplerule.core.rule.RiskHandler;
+import com.google.code.simplerule.core.rule.factory.PackageRuleFactory;
+import com.google.code.simplerule.proxy.risk.entity.FactorEntity;
+import com.google.code.simplerule.proxy.risk.entity.OperatorEntity;
+import com.google.code.simplerule.proxy.risk.entity.RiskMenuEntity;
+import com.google.code.simplerule.proxy.risk.entity.RuleConditionEntity;
+import com.google.code.simplerule.proxy.risk.entity.RuleHandlerEntity;
+import com.google.code.simplerule.proxy.risk.entity.RulesEntity;
+import com.google.code.simplerule.proxy.risk.entity.common.Constants;
+import com.google.code.simplerule.proxy.risk.monitor.RiskMonitoring;
+import com.google.code.simplerule.proxy.risk.service.RiskMenuService;
+import com.google.code.simplerule.proxy.risk.service.RulesDraftService;
+
+@Controller
+@RequestMapping("/risk/rulesAudit")
+public class RulesAuditController extends BaseController {
+	@Autowired
+	private RiskMenuService riskMenuService;
+	@Autowired
+	private RulesDraftService rulesDraftService;
+	@Autowired
+	private ProxyRuleProcessor proxyRuleProcessor;
+	@Autowired
+	private PackageRuleFactory packageRuleFactory;
+	@Autowired
+	private RiskMonitoring monitor;
+
+	@RequestMapping("/list")
+	public void getHandlers(String id, HttpServletRequest request,
+			HttpServletResponse response) {
+
+		if (StringUtils.isBlank(id)) {
+			return;
+		}
+		RiskMenuEntity menu = riskMenuService.getById(Integer.parseInt(id));
+		if (menu == null) {
+			return;
+		}
+		List<RulesEntity> list = rulesDraftService.findByInterfaceName(menu
+				.getInterfaceName());
+		this.outJsonString(response, list);
+
+	}
+
+	@RequestMapping("/factors")
+	public void getConditions(String rulesId, String flag,
+			HttpServletRequest request, HttpServletResponse response) {
+		RulesEntity rules;
+		List<RuleConditionEntity> conditions = null;
+		List<RuleHandlerEntity> handlers = null;
+		if (StringUtils.isBlank(rulesId))
+			return;
+		rules = rulesDraftService.findByRuleId(Long.valueOf(rulesId));
+		conditions = rulesDraftService.findRuleConditionByRuleId(Long
+				.valueOf(rulesId));
+		handlers = rulesDraftService.findRuleHandlerByRuleId(Long
+				.valueOf(rulesId));
+		if (rules == null)
+			return;
+		Object obj = request.getAttribute(Constants.HTTP_LOGIN_CONTEXT);
+		JSONObject user = (JSONObject) JSON.toJSON(obj);
+		String erp = (String) user.get(Constants.ERP_LOGIN_NAME);
+		if (rules.getCreatePerson().equalsIgnoreCase(erp))
+			rules.setIsowner(true);
+
+		List<RiskFactor> factors = proxyRuleProcessor.findFactors(null);
+		List<FactorEntity> factorList = rulesDraftService
+				.getFactorList(factors);
+		List<List<OperatorEntity>> operators = rulesDraftService
+				.getConditionList(rulesDraftService
+						.getFactorsByConditions(conditions));
+		List<RiskHandler> handlersList = proxyRuleProcessor.findHandlers(null);
+		List<RuleHandlerEntity> hl = rulesDraftService
+				.getRuleHandlerList(handlersList);
+		Map<String, Object> result = new HashMap<String, Object>();
+		result.put("factors", factorList);
+		result.put("conditions", conditions);
+		result.put("operators", operators);
+		result.put("rules", rules);
+		result.put("handlers", handlers);
+		result.put("handlerList", hl);
+		this.outJsonString(response, result);
+
+	}
+
+	@RequestMapping("/auditThrough")
+	public void auditThrough(String rulesNo, String operateType,
+			HttpServletRequest request, HttpServletResponse response) {
+
+		Object obj = request.getAttribute(Constants.HTTP_LOGIN_CONTEXT);
+		JSONObject user = (JSONObject) JSON.toJSON(obj);
+		String erp = (String) user.get(Constants.ERP_LOGIN_NAME);
+		RulesEntity rule = rulesDraftService.findByNo(rulesNo);
+		if (rule == null)
+			return;
+
+		if (Constants.OPERATETYPE_ADD.equals(operateType)
+				|| Constants.OPERATETYPE_UPDATE.equals(operateType))
+			rulesDraftService.auditThroughNewOrUpdate(rulesNo, erp);
+		else if (Constants.OPERATETYPE_DELETE.equals(operateType))
+			rulesDraftService.auditThroughDelete(rulesNo, erp);
+		int code = monitor.runCommand("notifyChanged", rule.getInterfaceName());
+		this.outJsonString(response, ""+code);
+
+	}
+
+	@RequestMapping("/auditRefuse")
+	public void auditRefuse(String rulesNo, HttpServletRequest request,
+			HttpServletResponse response) {
+
+		Object obj = request.getAttribute(Constants.HTTP_LOGIN_CONTEXT);
+		JSONObject user = (JSONObject) JSON.toJSON(obj);
+		String erp = (String) user.get(Constants.ERP_LOGIN_NAME);
+		rulesDraftService.auditRefuse(rulesNo, erp);
+	}
+
+	@RequestMapping("/refuseAndEdit")
+	public void refuseAndEdit(String rulesNo,String reason, HttpServletRequest request,
+			HttpServletResponse response) {
+
+		Object obj = request.getAttribute(Constants.HTTP_LOGIN_CONTEXT);
+		JSONObject user = (JSONObject) JSON.toJSON(obj);
+		String erp = (String) user.get(Constants.ERP_LOGIN_NAME);
+		rulesDraftService.refuseAndEdit(rulesNo,reason,erp);
+
+	}
+}

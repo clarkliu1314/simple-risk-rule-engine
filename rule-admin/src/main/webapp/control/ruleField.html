@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>规则字段维护</title>
+    <link rel="stylesheet" type="text/css" href="/style/themes/default/easyui.css">
+	<link rel="stylesheet" type="text/css" href="/style/themes/icon.css">
+	<script type="text/javascript" src="/style/jquery-1.8.0.min.js"></script>
+	<script type="text/javascript" src="/style/jquery.easyui.min.js"></script>
+	<style type="text/css">
+	#fm input {
+		width: 300px;
+	}
+	
+	</style>
+	
+	
+	<script type="text/javascript">
+	function searchRuleField() {
+		var param = new Object();
+		
+		param.category = $("#query [name='category']").val();
+		param.name = $("#query [name='name']").val();
+		
+		$('#dg').datagrid('load', param);
+	}
+	
+	
+	var url = "";
+	function save() {
+		 $('#dlg').dialog('open').dialog('setTitle','新增规则字段');  
+         $('#fm').form('clear');
+         url = "save";
+	}
+	
+	function modify() {
+		var row = $('#dg').datagrid('getSelected');  
+        if (row) {  
+            $('#dlg').dialog('open').dialog('setTitle','修改规则字段');
+            
+            var list = row.codeList.split(",");
+            var codes = "";
+            var codeInfos = ""
+            for(var i=0; i<list.length; i++) {
+            	var codeArray = list[i].split(":");
+            	
+            	if(i != 0) {
+            		codes += ",";
+            		codeInfos += ",";
+            	}
+            	
+            	codes += codeArray[0];
+            	codeInfos += codeArray[1];
+            }
+            
+            row.codes = codes;
+            row.codeInfos = codeInfos;
+            $('#fm').form('load',row);
+            url = "modify";
+        }
+	}
+	
+	function saveOrmodify() {
+		$('#fm').form('submit',{  
+            url: "/ccmis/risk/ruleFied/" + url,  
+            onSubmit: function(){
+            	
+            	var isVaild = $(this).form('validate');
+            	
+            	if(isVaild) {
+            		var codes = $("#fm [name=codes]").val().split(",");
+                	var codeInfos = $("#fm [name=codeinfos]").val().split(",");
+                	
+                	if(codes.length == codeInfos.length) {
+                		return true;
+                	} else {
+                		$.messager.alert('Error',"编码及编码信息数量必须一致");
+                		return false;
+                	}
+            	} else {
+            		return false;
+            	}
+            },  
+            success: function(result){  
+                var result = eval('('+result+')');  
+                if (!result.success){  
+                    $.messager.show({  
+                        title: 'Error',  
+                        msg: result.message
+                    });  
+                } else {  
+                    $('#dlg').dialog('close');      // close the dialog  
+                    $('#dg').datagrid('reload');    // reload the user data  
+                }  
+            }  
+        }); 
+	}
+	
+	function deleteRuleField() {
+		
+		var row = $('#dg').datagrid('getSelected');  
+        if (row){  
+            $.messager.confirm('Confirm','您确认删除选中的记录吗？',function(r){  
+                if (r){  
+                    $.post('/ccmis/risk/ruleFied/delete',{id:row.id},function(result){  
+                        if (result.success){  
+                            $('#dg').datagrid('reload');    // reload the user data  
+                        } else {  
+                            $.messager.show({   // show error message  
+                                title: 'Error',  
+                                msg: result.errorMsg  
+                            });  
+                        }  
+                    },'json');  
+                }  
+            });  
+        }
+	}
+	</script>
+	
+	
+	
+</head>
+<body>
+	<table class="easyui-datagrid" title="规则字段维护" width="100%" style="height:550px"
+			url="/ccmis/risk/ruleFied/getGird" id="dg"
+            toolbar="#toolbar" pagination="true"  
+            rownumbers="true" fitColumns="true" singleSelect="true">
+		<thead>
+			<tr>
+				<th data-options="field:'id'">ID</th>
+				<th data-options="field:'category'">分类</th>
+				<th data-options="field:'name'">名称</th>
+				<th data-options="field:'description'">描述</th>
+				<th data-options="field:'codeList'">列表</th>
+				<th data-options="field:'createTime'">创建时间</th>
+				<th data-options="field:'operator'">操作人</th>
+			</tr>
+		</thead>
+	</table>
+	
+	<div id="toolbar">  
+		<div>
+            <table id="query">
+            	<tr>
+            		<td>分类：</td>
+            		<td><input type="text" name="category"></td>
+            		<td>名称：</td>
+            		<td><input type="text" name="name"></td>
+            		<td><a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-search" onclick="searchRuleField();">查询</a></td>
+            	</tr>
+			</table>
+		</div>
+		<div style="margin-bottom:5px">
+			<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="save()">添加</a>  
+        	<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="modify()">修改</a>  
+        	<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="deleteRuleField()">删除</a>
+		</div>
+    </div> 
+	
+    <div id="dlg" class="easyui-dialog" style="width:500px;height:320px;padding:5px 5px"  
+            closed="true" buttons="#dlg-buttons">  
+        <form id="fm" method="post">  
+            <table>
+            	<tr>
+            		<td>&nbsp;</td>
+            		<td>编码及编码信息，多个以,分隔，数量需保持一致</td>
+            	</tr>
+            	<tr>
+            		<td>分类：</td>
+            		<td><input class="easyui-validatebox" type="text" name="category" data-options="required:true"></td>
+            	</tr>            	
+            	<tr>
+            		<td>名称：</td>
+            		<td><input class="easyui-validatebox" type="text" name="name" data-options="required:true">
+            			<input type="hidden" name="id">
+            		</td>
+            	</tr>
+            	<tr>
+            		<td>描述：</td>
+            		<td><textarea style="height: 70px;width: 300px;" name="description"></textarea></td>
+            	</tr>
+            	<tr>
+            		<td>编码：</td>
+            		<td><input class="easyui-validatebox" type="text" name="codes" data-options="required:false"></td>
+            	</tr>
+            	<tr>
+            		<td>编码信息：</td>
+            		<td><input class="easyui-validatebox" type="text" name="codeinfos" data-options="required:false"></td>
+            	</tr>
+            </table>
+        </form>  
+    </div>  
+    <div id="dlg-buttons">  
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveOrmodify()">保存</a>  
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')">取消</a>  
+    </div>	
+	
+</body>
+</html>

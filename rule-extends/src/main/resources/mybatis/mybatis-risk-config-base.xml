@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+    <settings>
+        <setting name="cacheEnabled" value="false"/>
+        <setting name="useGeneratedKeys" value="true"/>
+        <setting name="defaultExecutorType" value="REUSE"/>
+    </settings>
+
+    <typeAliases>
+        <typeAlias alias="BlackListEntity" type="com.google.code.simplerule.proxy.risk.entity.BlackListEntity"/>
+        <typeAlias alias="WhiteListEntity" type="com.google.code.simplerule.proxy.risk.entity.WhiteListEntity"/>
+        <typeAlias alias="SystemEntity" type="com.google.code.simplerule.proxy.risk.entity.SystemEntity"/>
+        <typeAlias alias="InterfaceEntity" type="com.google.code.simplerule.proxy.risk.entity.InterfaceEntity"/>
+        <typeAlias alias="RulesEntity" type="com.google.code.simplerule.proxy.risk.entity.RulesEntity"/>
+        <typeAlias alias="RiskMenuEntity" type="com.google.code.simplerule.proxy.risk.entity.RiskMenuEntity"/>
+        <typeAlias alias="RuleConditionEntity" type="com.google.code.simplerule.proxy.risk.entity.RuleConditionEntity"/>
+        <typeAlias alias="RuleHandlerEntity" type="com.google.code.simplerule.proxy.risk.entity.RuleHandlerEntity"/>
+        <typeAlias alias="RegisterServerEntity" type="com.google.code.simplerule.proxy.risk.entity.RegisterServerEntity"/>
+        <typeAlias alias="RuleFieldEntity" type="com.google.code.simplerule.proxy.risk.entity.RuleFieldEntity"/>
+        <typeAlias alias="InterfaceLogFieldEntity" type="com.google.code.simplerule.proxy.risk.entity.InterfaceLogFieldEntity"/>
+    </typeAliases>
+
+    <mappers>
+        <mapper resource="mybatis/mapper/risk/BlackListMapper.xml"/>
+        <mapper resource="mybatis/mapper/risk/WhiteListMapper.xml"/>
+        <mapper resource="mybatis/mapper/risk/SystemMapper.xml"/>
+        <mapper resource="mybatis/mapper/risk/InterfaceMapper.xml"/>
+        <mapper resource="mybatis/mapper/risk/RiskMenuMapper.xml"/>
+        <mapper resource="mybatis/mapper/risk/RulesMapper.xml"/>
+        <mapper resource="mybatis/mapper/risk/RuleConditionMapper.xml"/>
+        <mapper resource="mybatis/mapper/risk/RuleHandlerMapper.xml"/>
+        <mapper resource="mybatis/mapper/risk/RulesDraftMapper.xml"/>
+        <mapper resource="mybatis/mapper/risk/RuleConditionDraftMapper.xml"/>
+        <mapper resource="mybatis/mapper/risk/RuleHandlerDraftMapper.xml"/>
+        <mapper resource="mybatis/mapper/risk/RegisterServerMapper.xml"/>
+        <mapper resource="mybatis/mapper/risk/RuleFieldMapper.xml"/>
+        <mapper resource="mybatis/mapper/risk/InterfaceLogFieldMapper.xml"/>
+    </mappers>
+</configuration>

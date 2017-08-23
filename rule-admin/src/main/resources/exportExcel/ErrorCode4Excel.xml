@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xmlExport>
+    <!--导出后文件显示的名字 -->
+    <fileName>错误码</fileName>
+
+    <!--sheet的名字 -->
+    <sheetName>错误码</sheetName>
+
+    <!--列的宽度 -->
+    <columnWidth>30</columnWidth>
+
+    <!--第一行的名字 -->
+    <headers>
+        <header>外部错误号码</header>
+        <header>外部错误描述</header>
+        <header>内部错误号码</header>
+        <header>内部错误描述</header>
+        <header>银行错误号码</header>
+        <header>银行错误描述</header>
+    </headers>
+
+    <object>
+        <!--类的名字，全路径 -->
+        <objectName>
+            com.jd.payment.core.ccmis.dto.result.configmanage.dict.ExcelResultDTO
+        </objectName>
+        <attributes>
+            <!--要导出的属性名，必须保持一致-->
+            <attrName>externalErrorCode</attrName>
+            <attrName>externalErrorDescription</attrName>
+            <attrName>internalErrorCode</attrName>
+            <attrName>internalErrorDescription</attrName>
+            <attrName>bankErrorCode</attrName>
+            <attrName>bankErrorDescription</attrName>
+        </attributes>
+    </object>
+
+</xmlExport>

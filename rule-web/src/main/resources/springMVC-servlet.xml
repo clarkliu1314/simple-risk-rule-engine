@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans-2.0.xsd 
+		http://www.springframework.org/schema/mvc 
+		http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd 
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context-3.1.xsd 
+		http://www.springframework.org/schema/task 
+        http://www.springframework.org/schema/task/spring-task-3.0.xsd">
+	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:conf/important.properties</value>
+                <value>classpath:conf/rule.properties</value>
+            </list>
+        </property>
+        <property name="ignoreUnresolvablePlaceholders" value="true" />
+    </bean>
+    
+    <import resource="classpath*:/spring/spring-*.xml"/>
+
+	<bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping" />
+	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+		<property name="messageConverters">
+			<list>
+				<bean
+					class="org.springframework.http.converter.StringHttpMessageConverter">
+					<property name="supportedMediaTypes">
+						<list>
+							<value>text/html;charset=UTF-8</value>
+						</list>
+					</property>
+				</bean>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="velocityEngine"
+		class="org.springframework.ui.velocity.VelocityEngineFactoryBean">
+		<property name="resourceLoaderPath">
+			<value>/views/</value>
+		</property>
+		<property name="velocityProperties">
+			<props>
+				<prop key="input.encoding">UTF-8</prop>
+				<prop key="output.encoding">UTF-8</prop>
+				<prop key="default.contentType">text/html; charset=UTF-8</prop>
+			</props>
+		</property>
+	</bean>
+	<bean id="velocityConfig"
+		class="org.springframework.web.servlet.view.velocity.VelocityConfigurer">
+		<property name="configLocation" value="/WEB-INF/velocity.properties" />
+		<property name="velocityEngine" ref="velocityEngine" />
+	</bean>
+	<bean id="viewResolver"
+		class="org.springframework.web.servlet.view.velocity.VelocityViewResolver">
+		<property name="cache" value="true" />
+		<property name="prefix" value="" />
+		<property name="suffix" value=".vm" />
+
+		<!-- if you want to use the Spring Velocity macros, set this property to 
+			true -->
+		<property name="exposeSpringMacroHelpers" value="true" />
+		<property name="contentType" value="text/html;charset=UTF-8"></property>
+
+		<property name="toolboxConfigLocation">
+			<value>/WEB-INF/toolbox.xml</value>
+		</property>
+	</bean>
+
+	<bean id="ruleFactory" class="com.google.code.simplerule.core.rule.factory.PackageRuleFactory">
+		<property name="ruleResources" value="classpath:rules/*.xml"/>
+	</bean>
+		
+	<!-- <bean id="packageRuleFactory" class="com.google.code.simplerule.core.rule.factory.PackageRuleFactory">
+		<property name="ruleResources" value="classpath:rules/*.xml"/>
+	</bean>	
+	<bean id="dbRuleFactory" class="com.google.code.simplerule.proxy.risk.rule.factory.DatabaseRuleFactory">
+	</bean>
+	<bean id="ruleFactory" class="com.google.code.simplerule.core.rule.factory.CombineRuleFactory">
+		<constructor-arg ref="dbRuleFactory"></constructor-arg>
+		<constructor-arg ref="packageRuleFactory"></constructor-arg>
+		<constructor-arg value="${remote.load.skip}"></constructor-arg>
+	</bean> -->
+		
+	
+	
+	<!-- <bean id="drpc" class="backtype.storm.utils.DRPCClient">
+		<constructor-arg value="${storm.host}"></constructor-arg>
+		<constructor-arg value="${storm.port}"></constructor-arg>
+	</bean> -->
+	
+	<!-- <bean id="drpc" class="com.google.code.simplerule.tools.storm.drpc.LocalDRPCClient">
+		<property name="localDataProviders">
+			<list>
+				<bean class="com.google.code.simplerule.proxy.qpay.drpc.PayTimeDataProvider"></bean>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="riskLogDao" class="com.google.code.simplerule.hbase.dao.impl.RiskLogDaoImpl">
+		<constructor-arg value="${hbase.zookeeper.quorum}"/>
+	</bean>
+	
+	<bean id="accountService" class="com.google.code.simplerule.proxy.account.service.AccountService">
+	</bean>
+	
+	<bean id="riskLogService" class="com.google.code.simplerule.proxy.risk.service.RiskLogService">
+	</bean>
+	
+	<bean id="qpayDao" class="com.google.code.simplerule.proxy.qpay.dao.QpayDao"/>
+	
+	<bean id="tradeStatByCardAndHourConvertor" class="com.google.code.simplerule.proxy.qpay.converter.TradeStatByCardAndHourConvertor">
+		<property name="redisConvertorExpireTime" value="${redis.convertor.expire.time}"/>
+	</bean> -->
+	
+
+	<bean id="runner" class="com.google.code.simplerule.core.runner.DefaultRunner">
+	</bean>
+	
+	<!--
+	<bean id="runner" class="com.google.code.simplerule.core.runner.ActorRunner">
+		<constructor-arg value="${runner.actor.max}"></constructor-arg>
+	</bean>
+	 -->
+	
+	<!-- 
+	<task:executor id="taskExecutor" pool-size="100-1000" queue-capacity="1024"  keep-alive="100"/>
+	
+	<bean id="asyncFactory" class="com.google.code.simplerule.async.thread.ThreadFactory">
+		<constructor-arg ref="taskExecutor" />
+	</bean>
+	 -->
+	 
+	<bean id="riskLogger" class="com.google.code.simplerule.core.rule.NoneRiskLogger">
+	</bean>
+	
+	<bean id="processor" class="com.google.code.simplerule.core.processor.DefaultRuleProcessor" init-method="initialize">
+		<constructor-arg ref="ruleFactory"></constructor-arg>
+		<constructor-arg ref="runner"></constructor-arg>
+		<constructor-arg ref="riskLogger"></constructor-arg>
+		<constructor-arg value="${rule.log.all}"></constructor-arg>
+		<!-- <constructor-arg ref="asyncFactory"></constructor-arg> -->
+	</bean>
+	
+	<!-- <bean id="manualAuditDataDao" class="com.google.code.simplerule.proxy.risk.dao.ManualAuditDataDao">
+		<constructor-arg value="${hbase.zookeeper.quorum}"/>
+	</bean>	
+	
+	<bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<property name="maxActive" value="${redis.maxActive}" />  
+        <property name="maxIdle" value="5000" />  
+        <property name="maxWait" value="10000" />  
+        <property name="testOnBorrow" value="true" /> 
+	</bean>
+	<bean id="shardedJedisPool" class="redis.clients.jedis.ShardedJedisPool">
+        <constructor-arg ref="jedisPoolConfig" />
+        <constructor-arg>
+        	<list>
+        		<bean class="redis.clients.jedis.JedisShardInfo">
+        			<constructor-arg value="${redis1.host}" />
+        			<constructor-arg value="${redis1.port}" />
+        			<constructor-arg value="r1" />
+        		</bean>
+        		<bean class="redis.clients.jedis.JedisShardInfo">
+        			<constructor-arg value="${redis2.host}" />
+        			<constructor-arg value="${redis2.port}" />
+        			<constructor-arg value="r2" />
+        		</bean>
+        		<bean class="redis.clients.jedis.JedisShardInfo">
+        			<constructor-arg value="${redis3.host}" />
+        			<constructor-arg value="${redis3.port}" />
+        			<constructor-arg value="r3" />
+        		</bean>
+        	</list>
+        </constructor-arg>
+	</bean>
+	<bean id="redisQueue" class="com.google.code.simplerule.redis.queue.RedisQueue">
+		<constructor-arg ref="shardedJedisPool" />
+	</bean>
+	
+	<bean id="zkConnecter" class="com.google.code.simplerule.zookeeper.ZKConnecter">
+       <constructor-arg value="${zk.server}"/>
+	   <constructor-arg value="30000"/>
+	   <constructor-arg value="false"/>
+	</bean>
+	
+	<bean id="watcher" class="com.google.code.simplerule.proxy.risk.watcher.DatabaseWatcher">
+	</bean>
+	
+	<bean id="monitor" class="com.google.code.simplerule.core.monitor.MonitorServer" init-method="register" destroy-method="unregister">
+       <constructor-arg ref="watcher"/>
+	   <constructor-arg value="${system.name}"/>
+	   <constructor-arg value="${monitor.port}"/>
+	</bean>
+	
+	<bean id="thriftServer" class="com.google.code.simplerule.core.monitor.thrift.ThriftMonitorServer" init-method="start" destroy-method="stop">
+       <constructor-arg value="${monitor.port}"/>
+       <constructor-arg ref="processor"/>
+	</bean> -->
+	
+	<context:component-scan base-package="com.google.code.simplerule.core"></context:component-scan>
+	<context:component-scan base-package="com.google.code.simplerule.web"></context:component-scan>
+</beans>

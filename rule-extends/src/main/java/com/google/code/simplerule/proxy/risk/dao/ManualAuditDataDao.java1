@@ -1,0 +1,352 @@
+package com.google.code.simplerule.proxy.risk.dao;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.UUID;
+import javax.annotation.Resource;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.KeyValue;
+import org.apache.hadoop.hbase.client.HTable;
+import org.apache.hadoop.hbase.client.HTableInterface;
+import org.apache.hadoop.hbase.client.HTablePool;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.ResultScanner;
+import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.client.coprocessor.AggregationClient;
+import org.apache.hadoop.hbase.filter.BinaryComparator;
+import org.apache.hadoop.hbase.filter.ColumnPaginationFilter;
+import org.apache.hadoop.hbase.filter.CompareFilter;
+import org.apache.hadoop.hbase.filter.FamilyFilter;
+import org.apache.hadoop.hbase.filter.Filter;
+import org.apache.hadoop.hbase.filter.FilterList;
+import org.apache.hadoop.hbase.filter.RegexStringComparator;
+import org.apache.hadoop.hbase.filter.SingleColumnValueFilter;
+import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Service;
+
+import com.google.code.simplerule.proxy.risk.entity.ManualAuditDataEntity;
+import com.google.code.simplerule.proxy.risk.enums.RiskAuditStatusEnum;
+
+/**
+ * @author sunny
+ * @since 2013-5-15
+ * @version 1.0.0
+ * @comment 人工审核Dao
+ */
+
+public class ManualAuditDataDao {
+
+	private static Configuration conf = null;
+	private static HTablePool pool;
+	private static String TABLE_NAME = "MANUAL_AUDIT_DATA";
+
+	private final static Logger logger = Logger
+			.getLogger(ManualAuditDataDao.class);
+
+	public ManualAuditDataDao(String hbaseZookeeperQuorum) {
+		conf = HBaseConfiguration.create(new Configuration());
+		conf.set("hbase.zookeeper.quorum", hbaseZookeeperQuorum);
+		pool = new HTablePool(conf, 10);
+	}
+
+	/**
+	 * test
+	 * 
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		ManualAuditDataDao manualAuditDataDao = new ManualAuditDataDao(
+				"hadoop1");
+		for (int i = 360138; i < 1000000; i++) {
+			long start = System.currentTimeMillis();
+			manualAuditDataDao.insert(buildEntity(i));
+			long end = System.currentTimeMillis();
+			System.out.println("插入第" + i + "条数据时间" + (end - start));
+		}
+
+		// manualAuditDataDao.selectPaging(entity);
+	}
+
+	public static ManualAuditDataEntity buildEntity(int i) {
+		ManualAuditDataEntity entity = new ManualAuditDataEntity();
+		entity.setInterfaceName("payment.qpay.consume");
+		entity.setRuleNumber(String.valueOf(i));
+		entity.setRuleTrack("执行信息");
+		entity.setAuditStatus(String.valueOf(RiskAuditStatusEnum.WaitForAudit
+				.toCode()));
+		entity.setAuditBackup("审核备注");
+		entity.setOperator("system");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+		String rowKey = entity.getInterfaceName() + "@"
+				+ (Long.MAX_VALUE - Long.valueOf(sdf.format(new Date()))) + "@"
+				+ UUID.randomUUID().toString();
+		// rowKey =
+		// "qpay@100001@9223370668243262821@9bb079ab-2ade-4771-a967-2193e0f65746";
+		entity.setRowKey(rowKey);
+		Map param = new HashMap();
+		param.put("username", "sunlin");
+		param.put("tel", "110");
+		entity.setParam(param);
+		return entity;
+	}
+
+	/**
+	 * 插入
+	 * 
+	 * @param entity
+	 * @return
+	 */
+	public Integer insert(ManualAuditDataEntity entity) {
+		HTableInterface table = pool.getTable(TABLE_NAME);
+		try {
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+			String rowKey = entity.getInterfaceName() + "@"
+					+ (Long.MAX_VALUE - Long.valueOf(sdf.format(new Date())))
+					+ "@" + UUID.randomUUID().toString();
+			Put put = new Put(rowKey.getBytes());
+			// 固定数据
+			put.add(Bytes.toBytes("DATA"), Bytes.toBytes("ruleNumber"), entity
+					.getRuleNumber().getBytes());
+			put.add(Bytes.toBytes("DATA"), Bytes.toBytes("ruleTrack"), entity
+					.getRuleTrack().getBytes());
+			put.add(Bytes.toBytes("DATA"), Bytes.toBytes("auditStatus"), entity
+					.getAuditStatus().getBytes());
+			put.add(Bytes.toBytes("DATA"), Bytes.toBytes("auditBackup"), entity
+					.getAuditBackup().getBytes());
+			put.add(Bytes.toBytes("DATA"), Bytes.toBytes("operator"), entity
+					.getOperator().getBytes());
+
+			// 不定数据
+			Map param = entity.getParam();
+			if (param!=null && param.size() > 0) {
+				Set<Entry> set = param.entrySet();
+				Iterator<Entry> iterator = set.iterator();
+				while (iterator.hasNext()) {
+					Entry entry = iterator.next();
+					String key = (String) entry.getKey();
+					String value = (String) entry.getValue();
+					put.add(Bytes.toBytes("DATA"), Bytes.toBytes(key),
+							Bytes.toBytes(value));
+				}
+			}
+			table.put(put);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (table != null) {
+					table.close();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return 1;
+	};
+
+	/**
+	 * 修改,与插入相同
+	 * 
+	 * @param entity
+	 * @return
+	 */
+	public Integer update(ManualAuditDataEntity entity) {
+		HTableInterface table = pool.getTable(TABLE_NAME);
+
+		try {
+			Put put = new Put(entity.getRowKey().getBytes());
+			// 固定数据
+			if (entity.getRuleNumber() != null) {
+				put.add(Bytes.toBytes("DATA"), Bytes.toBytes("ruleNumber"),
+						entity.getRuleNumber().getBytes());
+			}
+			if (entity.getRuleTrack() != null) {
+				put.add(Bytes.toBytes("DATA"), Bytes.toBytes("ruleTrack"),
+						entity.getRuleTrack().getBytes());
+			}
+			if (entity.getAuditStatus() != null) {
+				put.add(Bytes.toBytes("DATA"), Bytes.toBytes("auditStatus"),
+						entity.getAuditStatus().getBytes());
+			}
+			if (entity.getAuditBackup() != null) {
+				put.add(Bytes.toBytes("DATA"), Bytes.toBytes("auditBackup"),
+						entity.getAuditBackup().getBytes());
+			}
+			if (entity.getOperator() != null) {
+				put.add(Bytes.toBytes("DATA"), Bytes.toBytes("operator"),
+						entity.getOperator().getBytes());
+			}
+
+			// 不定数据
+			Map param = entity.getParam();
+			if (param!=null && param.size() > 0) {
+				Set<Entry> set = param.entrySet();
+				Iterator<Entry> iterator = set.iterator();
+				while (iterator.hasNext()) {
+					Entry entry = iterator.next();
+					String key = (String) entry.getKey();
+					String value = (String) entry.getValue();
+					put.add(Bytes.toBytes("DATA"), Bytes.toBytes(key),
+							Bytes.toBytes(value));
+				}
+			}
+
+			table.put(put);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (table != null) {
+					table.close();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return 1;
+	};
+
+	/**
+	 * 分页查询
+	 * 
+	 * @return
+	 */
+	public List<ManualAuditDataEntity> selectPaging(ManualAuditDataEntity param) {
+		List<ManualAuditDataEntity> list = new ArrayList<ManualAuditDataEntity>();
+		HTable table = (HTable) pool.getTable(TABLE_NAME);
+		Scan scan = getScan(param);
+
+		ResultScanner rs = null;
+		try {
+			rs = table.getScanner(scan);
+			int i = 1;
+			int start = param.getPageStart();
+			int end = param.getPageEnd();
+			int rows = param.getRows();
+
+			for (Result result : rs) {
+				if (start > i) {
+					i++;
+					continue;
+				} else if (i >= start && i <= end) {
+					ManualAuditDataEntity entity = new ManualAuditDataEntity();
+					for (KeyValue kv : result.list()) {
+						setValues(kv, entity);
+					}
+					list.add(entity);
+					i++;
+				} else if (end < i) {
+					break;
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				table.close();
+				rs.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return list;
+	}
+
+	public FilterList setFilters(ManualAuditDataEntity param) {
+		FilterList filterList = new FilterList(
+				FilterList.Operator.MUST_PASS_ALL);
+		if ((param != null) && (param.getAuditStatus() != null) && (param.getAuditStatus().length() > 0)) {
+			SingleColumnValueFilter filter1 = new SingleColumnValueFilter(
+					Bytes.toBytes("DATA"), Bytes.toBytes("auditStatus"),
+					CompareFilter.CompareOp.EQUAL, Bytes.toBytes(param
+							.getAuditStatus()));
+			filterList.addFilter(filter1);
+		}
+
+		return filterList;
+	}
+
+	public Scan getScan(ManualAuditDataEntity param) {
+		Scan scan = new Scan();
+		scan.setFilter(setFilters(param));
+		scan.setStartRow((param.getInterfaceName() + "@"
+				+ (Long.MAX_VALUE - Long.valueOf(param.getManualAuditDate())) + "@!")
+				.getBytes());
+		scan.setStopRow((param.getInterfaceName() + "@"
+				+ (Long.MAX_VALUE - Long.valueOf(param.getManualAuditDate())) + "@~")
+				.getBytes());
+		scan.setCaching(200);
+		scan.setCacheBlocks(false);
+		return scan;
+	}
+
+	/**
+	 * 查询总数
+	 * @param param
+	 * @return
+	 */
+	public long getTotal(ManualAuditDataEntity param) {
+		long total = 0;
+		AggregationClient aggregationClient = new AggregationClient(conf);
+		Scan scan = getScan(param);
+		try {
+			scan.addColumn(Bytes.toBytes("DATA"),
+					Bytes.toBytes("interfaceName"));// 必须有此句，或者用addFamily(),否则出错，异常包含
+			total = aggregationClient.rowCount(TABLE_NAME.getBytes(), null,
+					scan);
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+
+		return total;
+	}
+
+	/**
+	 * 设置实体
+	 * 
+	 * @param kv
+	 * @param entity
+	 */
+	public void setValues(KeyValue kv, ManualAuditDataEntity entity) {
+		String rowKey = new String(kv.getRow());
+		String[] strings = rowKey.split("@");
+		entity.setRowKey(rowKey);
+		entity.setInterfaceName(strings[0]);
+		Long t = Long.MAX_VALUE - Long.valueOf(strings[1]);
+		entity.setManualAuditDate(String.valueOf(t));
+		if ("ruleNumber".equalsIgnoreCase(new String(kv.getQualifier()))) {
+			entity.setRuleNumber(new String(kv.getValue()));
+		} else if ("ruleTrack".equalsIgnoreCase(new String(kv.getQualifier()))) {
+			entity.setRuleTrack(new String(kv.getValue()));
+		} else if ("auditStatus"
+				.equalsIgnoreCase(new String(kv.getQualifier()))) {
+			entity.setAuditStatus(new String(kv.getValue()));
+			entity.setAuditStatusDisplayValue(RiskAuditStatusEnum.enumValueOf(
+					Integer.valueOf(new String(kv.getValue()))).toDescription());
+		} else if ("auditBackup"
+				.equalsIgnoreCase(new String(kv.getQualifier()))) {
+			entity.setAuditBackup(new String(kv.getValue()));
+		} else if ("operator".equalsIgnoreCase(new String(kv.getQualifier()))) {
+			entity.setOperator(new String(kv.getValue()));
+		//可选参数
+		} else if ("username".equalsIgnoreCase(new String(kv.getQualifier()))) {
+			entity.setUsername(new String(kv.getValue()));
+		} else if ("tel".equalsIgnoreCase(new String(kv.getQualifier()))) {
+			entity.setTel(new String(kv.getValue()));
+		}
+	}
+	
+}

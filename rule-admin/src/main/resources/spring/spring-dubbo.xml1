@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd 
+	http://code.alibabatech.com/schema/dubbo
+	http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+	<context:property-placeholder location="classpath:runtimecfg/remote-config.properties" ignore-unresolvable="true"/>
+	<dubbo:application name="ccmis-common"  />
+ 
+	<!-- 使用zookeeper广播注册中心暴露服务地址 -->
+	<dubbo:registry id="pciRegistry" protocol="${register.protocol}" address="${register.server.pci}" />
+    <dubbo:registry id="bankrepairRegistry" protocol="${register.protocol}" address="${register.server.bankrepair}" />
+
+	<dubbo:consumer retries="0" timeout="10000" check="false"/>
+
+    <!--PCI-->
+	<dubbo:reference id="encryptFacade" interface="com.jd.payment.facade.pci.EncryptFacade" version="1.0.0" registry="pciRegistry"/>
+
+    <!--TODO 移到网关项目 网关补单-->
+    <dubbo:reference id="remoteBankrepairFacade" interface="com.jd.paygate.bankrepair.facade.BankrepairFacade" registry="bankrepairRegistry" retries="0" timeout="10000" check="false" />
+
+    <dubbo:reference id="refundFacade" interface="com.jd.paygate.refund.facade.facade.RefundFacade" registry="bankrepairRegistry" retries="0" timeout="10000" check="false" />
+
+</beans>

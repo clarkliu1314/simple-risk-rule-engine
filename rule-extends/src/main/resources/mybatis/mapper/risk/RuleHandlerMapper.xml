@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="RuleHandlerMapper">
+	<resultMap id="RuleHandlerMap" type="RuleHandlerEntity">
+		<id column="ID" property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result column="RULE_ID" property="ruleId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result column="COMMAND" property="command" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="COMMAND_VALUE" property="commandValue" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+    
+    <sql id="RuleHandlerColumns">
+    	RULE_ID,
+    	COMMAND,
+    	COMMAND_VALUE
+    </sql>
+    
+	<insert id="insert" useGeneratedKeys="true" parameterType="RuleHandlerEntity">
+        insert into risk_rule_handler
+        (
+            <include refid="RuleHandlerColumns"/>
+        )
+        values
+        (
+            #{ruleId},
+            #{command},
+            #{commandValue}
+        )
+    </insert>
+
+	<delete id="deleteByRuleId" parameterType="java.lang.Long">
+        delete from
+            risk_rule_handler
+        where
+            RULE_ID=#{ruleId}
+    </delete>
+    
+    <delete id="delete" parameterType="java.lang.Long">
+        delete from
+            risk_rule_handler
+        where
+            ID=#{id}
+    </delete>
+
+    <select id="findByRuleId" parameterType="java.lang.Long" resultMap="RuleHandlerMap">
+        select 
+        ID,
+		<include refid="RuleHandlerColumns"/>
+        from risk_rule_handler 
+        where RULE_ID=#{ruleId} 
+        order by ID
+    </select>
+
+ 	<select id="getById" parameterType="java.lang.Long" resultMap="RuleHandlerMap">
+        select 
+        ID,
+		<include refid="RuleHandlerColumns"/>
+		from risk_rule_handler
+		where ID=#{id}
+    </select>
+</mapper>

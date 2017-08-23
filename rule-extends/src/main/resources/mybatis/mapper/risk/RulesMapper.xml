@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="RulesMapper">
+	<resultMap id="RulesMap" type="RulesEntity">
+		<id column="ID" property="id" jdbcType="BIGINT" javaType="long"/>
+		<result column="NO" property="no" jdbcType="VARCHAR" javaType="java.lang.String"/>
+		<result column="NAME" property="name" jdbcType="VARCHAR" javaType="java.lang.String"/>
+		<result column="START_TIME" property="startTime" jdbcType="TIMESTAMP" javaType="java.util.Date"/>
+		<result column="END_TIME" property="endTime" jdbcType="TIMESTAMP" javaType="java.util.Date"/>
+		<result column="STATUS" property="status" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+		<result column="PRIORITY" property="priority" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+		<result column="LEVEL" property="level" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+		<result column="CREATE_PERSON" property="createPerson" jdbcType="VARCHAR" javaType="java.lang.String"/>
+		<result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" javaType="java.util.Date"/>
+		<result column="INTERFACE_NAME" property="interfaceName" jdbcType="VARCHAR" javaType="java.lang.String"/>
+		<result column="START_INTERVAL" property="startInterval" jdbcType="VARCHAR" javaType="java.lang.String"/>
+		<result column="END_INTERVAL" property="endInterval" jdbcType="VARCHAR" javaType="java.lang.String"/>
+	</resultMap>
+    
+    
+	<sql id="query">
+		<if test="id != null ">
+            and id = #{id,jdbcType=LONG,javaType=long}
+		</if>
+		<if test="name != null ">
+            and NAME = #{name,jdbcType=VARCHAR,javaType=string}
+		</if>
+		<if test="systemName != null ">
+            and INTERFACE_NAME = #{interfaceName,jdbcType=VARCHAR,javaType=string}
+		</if>
+	</sql>
+    
+	<sql id="RulesColumns">
+    	NO,
+    	NAME,
+    	START_TIME,
+    	END_TIME,
+    	STATUS,
+    	PRIORITY,
+    	LEVEL,
+    	CREATE_PERSON,
+    	CREATE_TIME,
+    	INTERFACE_NAME,
+    	START_INTERVAL,
+    	END_INTERVAL
+	</sql>
+    
+	<insert id="insert" useGeneratedKeys="true" parameterType="RulesEntity">
+		<selectKey resultType="long" keyProperty="id" order="AFTER">
+			SELECT @@IDENTITY AS id
+		</selectKey>
+        insert into risk_rule
+        (
+            <include refid="RulesColumns"/>
+        )
+        values
+        (
+            #{no},
+            #{name},
+            #{startTime},
+            #{endTime},
+            #{status},
+            #{priority},
+            #{level},
+            #{createPerson},
+            sysdate(),
+            #{interfaceName},
+            #{startInterval},
+            #{endInterval}
+        )
+    </insert>
+    
+      <update id="update" parameterType="RulesEntity">
+        update risk_rule set 
+        NO=#{no},
+    	NAME=#{name},
+    	START_TIME=#{startTime},
+    	END_TIME=#{endTime},
+    	STATUS=#{status},
+    	PRIORITY=#{priority},
+    	LEVEL=#{level},
+    	CREATE_PERSON=#{createPerson},
+    	CREATE_TIME= sysdate(),
+    	INTERFACE_NAME=#{interfaceName},
+    	START_INTERVAL=#{startInterval},
+    	END_INTERVAL=#{endInterval}
+        where
+        	ID=#{id}
+    </update>
+    
+    <select id="findByInterfaceName" parameterType="java.lang.String" resultMap="RulesMap">
+        select 
+        ID,
+		<include refid="RulesColumns"/>
+        from risk_rule 
+        where INTERFACE_NAME=#{interfaceName}
+        order by PRIORITY desc
+    </select>
+    
+     <select id="findById" parameterType="java.lang.Long" resultMap="RulesMap">
+        select 
+        ID,
+		<include refid="RulesColumns"/>
+        from risk_rule 
+        where id=#{ruleId}
+    </select>
+    
+    <select id="findLastNo" parameterType="java.lang.String" resultType="string">
+        select 
+        NO
+        from risk_rule 
+        where INTERFACE_NAME=#{interfaceName}
+        order by NO desc limit 0,1
+    </select>
+    
+      <delete id="delete" parameterType="java.lang.Long">
+        delete from
+            risk_rule
+        where
+            ID=#{id}
+    </delete>
+    
+  <select id="findByNo" parameterType="java.lang.String" resultMap="RulesMap">
+        select 
+         ID,
+		<include refid="RulesColumns"/>
+        from risk_rule 
+        where NO=#{no}
+    </select>
+    
+     <delete id="deleteByNo" parameterType="java.lang.String">
+        delete from
+            risk_rule
+        where
+            NO=#{no}
+    </delete>
+    
+</mapper>
+
+

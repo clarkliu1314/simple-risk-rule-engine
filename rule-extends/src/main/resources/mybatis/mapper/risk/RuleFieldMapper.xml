@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="RuleFieldMapper">
+	<resultMap id="RuleFieldMap" type="RuleFieldEntity">
+		<id column="ID" property="id" jdbcType="BIGINT" javaType="long" />
+		<result column="CATEGORY" property="category" jdbcType="VARCHAR"
+			javaType="java.lang.String" />
+		<result column="NAME" property="name" jdbcType="VARCHAR"
+			javaType="java.lang.String" />
+		<result column="DESCRIPTION" property="description" jdbcType="VARCHAR"
+			javaType="java.lang.String" />
+		<result column="CODES" property="codes" jdbcType="VARCHAR"
+			javaType="java.lang.String" />
+		<result column="CODEINFOS" property="codeinfos" jdbcType="VARCHAR"
+			javaType="java.lang.String" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"
+			javaType="java.util.Date" />
+		<result column="OPERATOR" property="operator" jdbcType="VARCHAR"
+			javaType="java.lang.String" />
+	</resultMap>
+
+	<sql id="query">
+		<if test="id != null ">
+			and ID = #{id,jdbcType=BIGINT,javaType=long}
+        </if>
+		<if test="category != null and category != ''">
+			and CATEGORY like
+			concat('%',#{category,jdbcType=VARCHAR,javaType=string},'%')
+        </if>
+		<if test="name != null and name != '' ">
+			and NAME like concat('%',#{name,jdbcType=VARCHAR,javaType=string},'%')
+		</if>
+	</sql>
+
+	<sql id="RuleFieldColumns">
+		CATEGORY,
+		NAME,
+		DESCRIPTION,
+		CODES,
+		CODEINFOS,
+		CREATE_TIME,
+		OPERATOR
+    </sql>
+
+	<insert id="insert" parameterType="RuleFieldEntity">
+		insert into risk_rule_field
+		(
+		<include refid="RuleFieldColumns" />
+		)
+		values
+		(
+		#{category,jdbcType=VARCHAR,javaType=string},
+		#{name,jdbcType=VARCHAR,javaType=string},
+		#{description,jdbcType=VARCHAR,javaType=string},
+		#{codes,jdbcType=VARCHAR,javaType=string},
+		#{codeinfos,jdbcType=VARCHAR,javaType=string},
+		now(),
+		#{operator,jdbcType=VARCHAR,javaType=string}
+		)
+	</insert>
+
+	<update id="update" parameterType="RuleFieldEntity">
+		update risk_rule_field set
+		CATEGORY = #{category,jdbcType=VARCHAR,javaType=string},
+		NAME = #{name,jdbcType=VARCHAR,javaType=string},
+		DESCRIPTION = #{description,jdbcType=VARCHAR,javaType=string},
+		CODES = #{codes,jdbcType=VARCHAR,javaType=string},
+		CODEINFOS = #{codeinfos,jdbcType=VARCHAR,javaType=string},
+		OPERATOR = #{operator,jdbcType=VARCHAR,javaType=string}
+		where
+		ID = #{id,jdbcType=BIGINT,javaType=long}
+    </update>
+
+	<delete id="deleteById" parameterType="long">
+		delete from
+		risk_rule_field
+		where
+		ID = #{id,jdbcType=BIGINT,javaType=long}
+    </delete>
+
+	<select id="queryLimit" parameterType="java.util.Map" resultMap="RuleFieldMap">
+		select
+		ID,
+		<include refid="RuleFieldColumns" />
+		from
+		risk_rule_field
+		<where>
+			<include refid="query" />
+		</where>
+		order by ID DESC
+		<if test="start != null and limit != null">
+			limit #{start,jdbcType=INTEGER,javaType=int},#{limit,jdbcType=INTEGER,javaType=int}
+		</if>
+	</select>
+	
+	<select id="listOrderByCategory" resultMap="RuleFieldMap">
+		select
+		ID,
+		<include refid="RuleFieldColumns" />
+		from
+		risk_rule_field
+		order by CATEGORY, ID
+	</select>
+
+	<select id="getCount" parameterType="java.util.Map" resultType="int">
+		select
+		count(ID)
+		from
+		risk_rule_field
+		<where>
+			<include refid="query" />
+		</where>
+	</select>
+	
+     <select id="queryById" parameterType="java.lang.String" resultMap="RuleFieldMap">
+		select ID,
+		<include refid="RuleFieldColumns" />
+		from
+		risk_rule_field
+		where id=#{value,jdbcType=BIGINT,javaType=java.lang.Long}
+	</select>
+	
+	
+	<select id="getCategories"  resultMap="RuleFieldMap">
+		select ID,
+		<include refid="RuleFieldColumns"/>
+		from risk_rule_field group by category
+	</select>
+	
+		<select id="getByCategory"  parameterType="java.util.Map" resultMap="RuleFieldMap">
+		select ID,
+		<include refid="RuleFieldColumns"/>
+		from risk_rule_field
+		<where>
+			category = #{category,jdbcType=VARCHAR,javaType=string}
+		</where>
+	</select>
+
+</mapper>

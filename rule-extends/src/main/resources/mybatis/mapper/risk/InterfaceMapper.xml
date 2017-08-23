@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="InterfaceMapper">
+	<resultMap id="InterfaceMap" type="InterfaceEntity">
+        <id column="ID" property="id" jdbcType="BIGINT" javaType="long"/>
+        <result column="SYSTEM_NAME" property="systemName" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="INTERFACE_NAME" property="interfaceName" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="EVENT_DESCRIPTION" property="eventDescription" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" javaType="java.util.Date"/>
+        <result column="STATUS" property="status" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP" javaType="java.util.Date"/>
+
+    </resultMap>
+    
+    
+    <sql id="query">
+        <if test="id != null ">
+            and ID = #{id,jdbcType=LONG,javaType=long}
+        </if>
+        <if test="systemName != null ">
+            and SYSTEM_NAME = #{systemName,jdbcType=VARCHAR,javaType=string}
+        </if>
+        <if test="interfaceName != null">
+            and INTERFACE_NAME = #{interfaceName,jdbcType=VARCHAR,javaType=string}
+        </if>
+        <if test="description != null">
+            and DESCRIPTION = #{description,jdbcType=VARCHAR ,javaType=string}
+        </if>
+        <if test="eventDescription != null">
+            and EVENT_DESCRIPTION = #{eventDescription,jdbcType=VARCHAR ,javaType=string}
+        </if>
+        <if test="status != null">
+            and STATUS = #{status,jdbcType=INTEGER ,javaType=integer}
+        </if>
+    </sql>
+    
+    <sql id="InterfaceColumns">
+    	SYSTEM_NAME,
+        INTERFACE_NAME,
+        DESCRIPTION,
+        EVENT_DESCRIPTION,
+        CREATE_TIME,
+        STATUS,
+        UPDATE_TIME
+    </sql>
+    
+	<insert id="insert" keyProperty="id" useGeneratedKeys="true" parameterType="InterfaceEntity">
+		<selectKey resultType="long" keyProperty="id" order="AFTER">
+			SELECT @@IDENTITY AS id
+		</selectKey>
+        insert into risk_interface
+        (
+            <include refid="InterfaceColumns"/>
+        )
+        values
+        (
+        	#{systemName},
+            #{interfaceName},
+            #{description},
+            #{eventDescription},
+            now(),
+            #{status},
+            now()
+        )
+    </insert>
+    
+    <update id="update" parameterType="InterfaceEntity">
+        update risk_interface set
+	        SYSTEM_NAME=#{systemName},
+	        INTERFACE_NAME=#{interfaceName},
+	        DESCRIPTION=#{description},
+	        EVENT_DESCRIPTION=#{eventDescription},
+	        STATUS=#{status},
+	        UPDATE_TIME=now()
+        where
+        	ID=#{id}
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.Integer">
+        delete from
+            risk_interface
+        where
+            id=#{id}
+    </delete>
+    
+    <delete id="deleteByInterface" parameterType="java.lang.String">
+        delete from
+            risk_interface
+        where
+            INTERFACE_NAME=#{interfaceName}
+    </delete>
+
+    <select id="selectAll" resultMap="InterfaceMap">
+        select 
+        ID,
+		<include refid="InterfaceColumns"/>
+        from risk_interface
+        order by ID
+    </select>
+    
+ 	<select id="getById" parameterType="java.lang.Integer" resultMap="InterfaceMap">
+        select 
+        ID,
+		<include refid="InterfaceColumns"/>
+		from risk_interface
+		where
+            id = #{id}
+    </select>
+    
+    <select id="getByName" parameterType="java.lang.String" resultMap="InterfaceMap">
+        select 
+        ID,
+		<include refid="InterfaceColumns"/>
+		from risk_interface
+		where
+            INTERFACE_NAME = #{value}
+    </select>
+    
+      <select id="queryLimit" parameterType="java.util.Map" resultMap="InterfaceMap">
+       select
+       ID,
+        <include refid="InterfaceColumns"/>
+        from
+         risk_interface
+        <where>
+            <include refid="query"/>
+        </where>
+        limit  #{start,jdbcType=INTEGER,javaType=int},#{limit,jdbcType=INTEGER,javaType=int}
+     </select>
+      <select id="getCount" parameterType="java.util.Map" resultType="int">
+        select
+        count(ID)
+        from
+        risk_interface
+        <where>
+            <include refid="query"/>
+        </where>
+    </select>
+     
+</mapper>

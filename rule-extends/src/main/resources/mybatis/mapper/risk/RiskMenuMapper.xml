@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="RiskMenuMapper">
+	<resultMap id="RiskMenuMap" type="RiskMenuEntity">
+		<id column="ID" property="id" jdbcType="INTEGER" javaType="int"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="INTERFACE_NAME" property="interfaceName" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="PARENT_ID" property="parentId" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" javaType="java.util.Date"/>
+        <result column="NUMBER" property="number" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+    
+    <sql id="RiskMenuColumns">
+    	NAME,
+    	CODE,
+    	INTERFACE_NAME,
+        PARENT_ID,
+        CREATE_TIME,
+        NUMBER
+    </sql>
+    
+	<insert id="insert" useGeneratedKeys="true" parameterType="RiskMenuEntity">
+		<selectKey resultType="int" keyProperty="id" order="AFTER">
+			SELECT @@IDENTITY AS id
+		</selectKey>
+        insert into risk_menu
+        (
+            <include refid="RiskMenuColumns"/>
+        )
+        values
+        (
+            #{name},
+            #{code},
+            #{interfaceName},
+            #{parentId},
+            #{createTime},
+            #{number}
+        )
+    </insert>
+    
+    <update id="update" parameterType="RiskMenuEntity">
+        update risk_menu set
+	        CODE=#{code},
+	        NAME=#{name},
+	        INTERFACE_NAME=#{interfaceName},
+	        PARENT_ID=#{parentId}
+        where
+        	ID=#{id}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.Integer">
+        delete from
+            risk_menu
+        where
+            ID=#{id}
+    </delete>
+
+    <select id="selectAll" resultMap="RiskMenuMap">
+        select 
+        ID,
+		<include refid="RiskMenuColumns"/>
+        from risk_menu 
+        order by PARENT_ID
+    </select>
+
+ 	<select id="getById" parameterType="java.lang.Integer" resultMap="RiskMenuMap">
+        select 
+        ID,
+		<include refid="RiskMenuColumns"/>
+		from risk_menu
+		where
+            ID=#{id}
+    </select>
+    
+    <select id="getByCode" parameterType="java.lang.String" resultMap="RiskMenuMap">
+        select 
+        ID,
+		<include refid="RiskMenuColumns"/>
+		from risk_menu
+		where
+            CODE=#{code}
+    </select>
+    
+      <select id="getRootMenuList" resultMap="RiskMenuMap">
+        select 
+        ID,
+		<include refid="RiskMenuColumns"/>
+        from risk_menu 
+        where parent_id = 0
+    </select>
+    
+    
+ 	<select id="getByParentId" parameterType="java.lang.Integer" resultMap="RiskMenuMap">
+        select 
+        ID,
+		<include refid="RiskMenuColumns"/>
+		from risk_menu
+		where
+            parent_id=#{parentId}
+    </select>
+    
+    
+	<select id="getCountByParentId" parameterType="java.lang.Integer" resultType="int">
+        select 
+        count(ID)
+		from risk_menu
+		where parent_id=#{parentId}
+    </select>
+    
+    <select id="getMaxNumberByParentId" parameterType="java.lang.Integer" resultMap="RiskMenuMap">
+        select 
+        ID,
+		<include refid="RiskMenuColumns"/>
+		from risk_menu
+		where parent_id=#{parentId} 
+		order by NUMBER desc limit 1
+    </select>
+</mapper>

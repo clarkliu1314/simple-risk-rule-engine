@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j='http://jakarta.apache.org/log4j/'>
+    <appender name="STDOUT" class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss}\t%F\t%L\t%m%n"/>
+        </layout>
+    </appender>
+
+    <appender name="debugAppender" class="org.apache.log4j.RollingFileAppender">
+    	<param name="Threshold" value="DEBUG"/>
+        <param name="File" value="${catalina.base}/logs/risk-debug.log"/>
+        <param name="Append" value="true"/>
+        <param name="Encoding" value="UTF-8" />
+        <param name="DatePattern" value="'.'yyyy-MM-dd"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss}\t%F\t%L\t%m%n"/>
+        </layout>
+    </appender>
+    <appender name="DEBUG" class="org.apache.log4j.AsyncAppender">
+		<param name="BufferSize" value="128"/>
+		<appender-ref ref="debugAppender"/>
+	</appender>
+	
+	<appender name="infoAppender" class="org.apache.log4j.RollingFileAppender">
+    	<param name="Threshold" value="INFO"/>
+        <param name="File" value="${catalina.base}/logs/risk-info.log"/>
+        <param name="Append" value="true"/>
+        <param name="Encoding" value="UTF-8" />
+        <param name="DatePattern" value="'.'yyyy-MM-dd"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss:SSS}\t%F\t%L\t%M\t%m%n"/>
+        </layout>
+    </appender>
+    <appender name="INFO" class="org.apache.log4j.AsyncAppender">
+		<param name="BufferSize" value="128"/>
+		<appender-ref ref="infoAppender"/>
+	</appender>
+	<!-- com.google.code.simplerule.log.RiskFileAppender -->
+	<appender name="warnAppender" class="org.apache.log4j.RollingFileAppender">
+    	<param name="Threshold" value="WARN"/>
+        <param name="File" value="${catalina.base}/logs/risk-warn.log"/>
+        <param name="Append" value="true"/>
+        <param name="Encoding" value="UTF-8" />
+        <param name="DatePattern" value="'.'yyyy-MM-dd"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss:SSS}\t%F\t%L\t%M\t%m%n"/>
+        </layout>
+    </appender>
+    <appender name="WARN" class="org.apache.log4j.AsyncAppender">
+		<param name="BufferSize" value="128"/>
+		<appender-ref ref="warnAppender"/>
+	</appender>
+	
+	<appender name="errorAppender" class="org.apache.log4j.RollingFileAppender">
+    	<param name="Threshold" value="ERROR"/>
+        <param name="File" value="${catalina.base}/logs/risk-error.log"/>
+        <param name="Append" value="true"/>
+        <param name="Encoding" value="UTF-8" />
+        <param name="DatePattern" value="'.'yyyy-MM-dd"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss:SSS}\t%F\t%L\t%M\t%m%n"/>
+        </layout>
+    </appender>
+    <appender name="ERROR" class="org.apache.log4j.AsyncAppender">
+		<param name="BufferSize" value="128"/>
+		<appender-ref ref="errorAppender"/>
+	</appender>
+	
+	<appender name="fatalAppender" class="org.apache.log4j.RollingFileAppender">
+    	<param name="Threshold" value="FATAL"/>
+        <param name="File" value="${catalina.base}/logs/risk-fatal.log"/>
+        <param name="Append" value="true"/>
+        <param name="Encoding" value="UTF-8" />
+        <param name="DatePattern" value="'.'yyyy-MM-dd"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss:SSS}\t%F\t%L\t%M\t%m%n"/>
+        </layout>
+    </appender>
+    <appender name="FATAL" class="org.apache.log4j.AsyncAppender">
+		<param name="BufferSize" value="128"/>
+		<appender-ref ref="fatalAppender"/>
+	</appender>
+	
+    <root>
+        <priority value="INFO"/>
+        <appender-ref ref="DEBUG"/>
+        <appender-ref ref="INFO"/>
+        <appender-ref ref="WARN"/>
+        <appender-ref ref="ERROR"/>
+        <appender-ref ref="FATAL"/>
+        <appender-ref ref="STDOUT"/>
+    </root>
+</log4j:configuration>

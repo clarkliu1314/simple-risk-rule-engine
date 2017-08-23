@@ -1,0 +1,17 @@
+<html>
+<body>
+	<h2>$name status</h2>
+	#if ($monitor)
+	<div>
+		<p><a href="/">Home</a>&nbsp;&nbsp;<a href="/1.0/process">InterfaceList</a>
+			&nbsp;&nbsp;<a href="/1.0/process/$name/help">Help</a></p>
+		<p>Last visit time:$!monitor.lastVisit</p>
+		<p>Successd request:$monitor.success</p>
+		<p>Failed request:$monitor.failure</p>
+		<p>Average request Time(ms):$monitor.averageTime</p>
+		<p>Max request Time(ms):$monitor.maxTime</p>
+		<p>Health:$monitor.health</p>
+	</div>
+	#end
+</body>
+</html>

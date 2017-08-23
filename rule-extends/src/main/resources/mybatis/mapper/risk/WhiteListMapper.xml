@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="WhiteListMapper">
+	<resultMap id="WhiteListMap" type="WhiteListEntity">
+        <id column="ID" property="id" jdbcType="BIGINT" javaType="long"/>
+        <result column="INTERFACE_NAME" property="interfaceName" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="TYPE" property="type" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="VALUE" property="value" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="STATUS" property="status" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" javaType="java.util.Date"/>
+        <result column="REASON" property="reason" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="OPERATOR" property="operator" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="KEY_VERSION" property="keyVersion" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP" javaType="java.util.Date"/>
+    </resultMap>
+    
+    <sql id="WhiteListColumns">
+        INTERFACE_NAME,
+        TYPE,
+        VALUE,
+        STATUS,
+        CREATE_TIME,
+        REASON,
+        OPERATOR,
+        KEY_VERSION,
+        UPDATE_TIME
+    </sql>
+    
+	<insert id="insert" keyProperty="id" useGeneratedKeys="true" parameterType="WhiteListEntity">
+        <selectKey resultType="long" keyProperty="id" order="AFTER">
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+        insert into risk_white_list
+        (
+            <include refid="WhiteListColumns"/>
+        )
+        values
+        (
+            #{interfaceName},
+            #{type},
+            #{value},
+            #{status},
+            sysdate(),
+            #{reason},
+            #{operator},
+            #{keyVersion},
+            now()
+        )
+    </insert>
+    
+    <update id="update" parameterType="WhiteListEntity">
+        update risk_white_list set 
+        	INTERFACE_NAME=#{interfaceName},
+        	TYPE=#{type},
+        	VALUE=#{value},
+        	STATUS=#{status},
+        	REASON=#{reason},
+        	OPERATOR=#{operator},
+        	KEY_VERSION=#{keyVersion},
+        	UPDATE_TIME=now()
+        where
+        	ID=#{id}
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.Integer">
+        delete from
+            risk_white_list
+        where
+            id=#{id}
+    </delete>
+
+    <select id="selectAll" resultMap="WhiteListMap">
+        select 
+        	ID,
+		<include refid="WhiteListColumns"/>
+        from risk_white_list
+    </select>
+    
+    <select id="search" resultMap="WhiteListMap">
+        select 
+        	ID,
+		<include refid="WhiteListColumns"/>
+        from risk_white_list
+        where 
+        	INTERFACE_NAME=#{interfaceName}
+        	and TYPE=#{type}
+        	and VALUE=#{value}
+        	and STATUS=#{status}
+    </select>
+    
+    <sql id="queryColumn">
+        <if test="id != null ">
+            and ID = #{id,jdbcType=BIGINT,javaType=long}
+        </if>
+         <if test="value != null ">
+            and VALUE = #{value,jdbcType=VARCHAR,javaType=string}
+        </if>
+        <if test="interfaceName != null ">
+            and INTERFACE_NAME = #{interfaceName,jdbcType=VARCHAR,javaType=string}
+        </if>
+        <if test="type != null">
+            and TYPE = #{type,jdbcType=VARCHAR,javaType=string}
+        </if>
+        <if test="status != null">
+            and STATUS = #{status,jdbcType=INTEGER ,javaType=integer}
+        </if>
+    </sql>
+    
+    <select id="query" parameterType="java.util.Map" resultMap="WhiteListMap">
+        select  
+        	ID,
+		<include refid="WhiteListColumns"/>
+        from risk_white_list
+        <where>
+            <include refid="queryColumn"/>
+        </where>
+        limit #{start,jdbcType=INTEGER,javaType=int},#{limit,jdbcType=INTEGER,javaType=int}
+    </select>
+
+    <select id="getCount" parameterType="java.util.Map" resultType="int">
+        select
+        count(ID)
+        from
+        risk_white_list
+        <where>
+            <include refid="queryColumn"/>
+        </where>
+    </select>
+
+ 	<select id="getById" parameterType="java.lang.Long" resultMap="WhiteListMap">
+        select 
+        ID,
+		<include refid="WhiteListColumns"/>
+		from risk_white_list
+		where
+            id = #{id}
+    </select>
+</mapper>

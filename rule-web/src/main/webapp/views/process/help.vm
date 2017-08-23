@@ -1,0 +1,54 @@
+<html>
+<body>
+	<h2>$name help information</h2>
+	<h3>POST:http://risk.jdpay.360buy.net:7001/1.0/process/$name</h3>
+	#if ($helpInfo)
+	<div>
+		<p><a href="/">Home</a>&nbsp;&nbsp;<a href="/1.0/process">InterfaceList</a>
+			&nbsp;&nbsp;<a href="/1.0/process/$name/status">Status</a></p>
+		#if ($helpInfo.paramInfos)
+		<div>
+			<h3>Parameter info</h3>
+			<table border="1">
+				<tr>
+				    <th>Name</th>
+				    <th>Type</th>
+				    <th>Description</th>
+				    <th>Require</th>
+				</tr>
+				#foreach ($p in $helpInfo.paramInfos)
+				<tr>
+					<td>$p.name</td>
+					<td>$p.type</td>
+					<td>$p.description</td>
+					<td>$p.require</td>
+				</tr>	
+				#end
+			</table>
+		</div>
+		#end
+		#if ($helpInfo.resultInfos)
+		<div>
+			<h3>Result info</h3>
+			<table border="1">
+				<tr>
+				    <th>Name</th>
+				    <th>Type</th>
+				    <th>Description</th>
+				    <th>Require</th>
+				</tr>
+				#foreach ($r in $helpInfo.resultInfos)
+				<tr>
+					<td>$r.name</td>
+					<td>$r.type</td>
+					<td>$r.description</td>
+					<td>$r.require</td>
+				</tr>	
+				#end
+			</table>
+		</div>
+		#end
+	</div>
+	#end
+</body>
+</html>

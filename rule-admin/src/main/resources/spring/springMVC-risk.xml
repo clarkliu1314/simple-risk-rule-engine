@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+  http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+  http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd"
+       default-autowire="byName">   
+    <import resource="classpath*:/spring/spring-risk-*.xml"/>
+    
+    <context:component-scan base-package="com.google.code.simplerule.core"></context:component-scan>
+    <context:component-scan base-package="com.google.code.simplerule.proxy"></context:component-scan>
+	<!-- <context:component-scan base-package="com.google.code.simplerule.ccmis.controller"></context:component-scan> -->
+	
+	<bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<!-- <property name="maxActive" value="100" />  
+        <property name="maxIdle" value="5000" />  
+        <property name="maxWait" value="10000" />  
+        <property name="testOnBorrow" value="false" /> --> 
+	</bean>
+    <bean id="jedisPool" class="redis.clients.jedis.JedisPool">
+        <constructor-arg index="0" ref="jedisPoolConfig"/>
+        <constructor-arg index="1" value="${redis1.host}" type="java.lang.String" />
+        <constructor-arg index="2" value="${redis1.port}" type="int"/>
+        <!-- <constructor-arg index="3" value="${redis.timeout}" type="int"/>
+        <constructor-arg index="4" value="${redis.auth}"/> -->
+    </bean>	
+	<!-- <bean id="shardedJedisPool" class="redis.clients.jedis.ShardedJedisPool">
+        <constructor-arg ref="jedisPoolConfig" />
+        <constructor-arg>
+        	<list>
+        		<bean class="redis.clients.jedis.JedisShardInfo">
+        			<constructor-arg value="${redis1.host}" />
+        			<constructor-arg value="${redis1.port}" />
+        			<constructor-arg value="r1" />
+        		</bean>
+        		<bean class="redis.clients.jedis.JedisShardInfo">
+        			<constructor-arg value="${redis2.host}" />
+        			<constructor-arg value="${redis2.port}" />
+        			<constructor-arg value="r2" />
+        		</bean>
+        		<bean class="redis.clients.jedis.JedisShardInfo">
+        			<constructor-arg value="${redis3.host}" />
+        			<constructor-arg value="${redis3.port}" />
+        			<constructor-arg value="r3" />
+        		</bean>
+        	</list>
+        </constructor-arg>
+	</bean> -->
+	
+	<!-- <bean id="drpc" class="com.google.code.simplerule.tools.storm.drpc.LocalDRPCClient">
+		<property name="localDataProviders">
+			<list>
+				<bean class="com.google.code.simplerule.proxy.qpay.drpc.PayTimeDataProvider"></bean>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="qpayDao" class="com.google.code.simplerule.proxy.qpay.dao.QpayDao"/>
+	
+	<bean id="tradeStatByCardAndHourConvertor" class="com.google.code.simplerule.proxy.qpay.converter.TradeStatByCardAndHourConvertor">
+		<property name="redisConvertorExpireTime" value="${redis.convertor.expire.time}"/>
+	</bean> -->
+	
+	<bean id="redisQueue" class="com.google.code.simplerule.redis.queue.RedisQueue">
+		<constructor-arg ref="jedisPool" />
+	</bean>
+	
+	<!-- <bean id="zkConnecter" class="com.google.code.simplerule.zookeeper.ZKConnecter">
+       <constructor-arg value="${register.server.risk}"/>
+	   <constructor-arg value="30000"/>
+	   <constructor-arg value="false"/>
+	</bean>
+	-->
+	
+	<bean id="watcher" class="com.google.code.simplerule.proxy.risk.watcher.DatabaseWatcher">
+	</bean>
+	
+	<bean id="riskMonitoring" class="com.google.code.simplerule.proxy.risk.monitor.WatcherRiskMonitor">
+		<constructor-arg ref="watcher"/>
+	</bean>
+	
+	<bean id="packageRuleFactory" class="com.google.code.simplerule.core.rule.factory.PackageRuleFactory">
+		<property name="ruleResources" value="classpath*:rules/*.xml"/>
+	</bean>
+	
+	<!-- 
+	<bean id="riskLogger" class="com.google.code.simplerule.core.rule.NoneRiskLogger">
+	</bean>
+	<bean id="runner" class="com.google.code.simplerule.core.runner.DefaultRunner">
+	</bean>	
+	
+	<bean id="processor" class="com.google.code.simplerule.core.processor.DefaultRuleProcessor" init-method="initialize">
+		<constructor-arg ref="ruleFactory"></constructor-arg>
+		<constructor-arg ref="runner"></constructor-arg>
+		<constructor-arg ref="riskLogger"></constructor-arg>
+		<constructor-arg value="true"></constructor-arg>
+	</bean> -->
+		
+	<bean id="processor" class="com.google.code.simplerule.core.processor.ProxyRuleProcessor" init-method="initialize">
+		<constructor-arg ref="packageRuleFactory"/>
+	</bean>
+	
+	<!-- <bean id="riskLogService" class="com.google.code.simplerule.proxy.risk.service.RiskLogService">
+	</bean>
+	
+	<bean id="riskLogDao" class="com.google.code.simplerule.hbase.dao.impl.RiskLogDaoImpl">
+		<constructor-arg value="${hbase.zookeeper.quorum}"/>
+	</bean>	
+	
+	<bean id="manualAuditDataDao" class="com.google.code.simplerule.proxy.risk.dao.ManualAuditDataDao">
+		<constructor-arg value="${hbase.zookeeper.quorum}"/>
+	</bean>	 -->
+</beans>

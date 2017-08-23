@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="RegisterServerMapper">
+	<resultMap id="RegisterServerMap" type="RegisterServerEntity">
+        <id column="ID" property="id" jdbcType="INTEGER" javaType="int"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="IP" property="ip" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="PORT" property="port" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <result column="PARAMS" property="params" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="LOGIN_TIME" property="loginTime" jdbcType="TIMESTAMP" javaType="java.util.Date"/>
+        <result column="LOGOUT_TIME" property="logoutTime" jdbcType="TIMESTAMP" javaType="java.util.Date"/>
+        <result column="ACTIVE" property="active" jdbcType="SMALLINT" javaType="java.lang.Integer"/>
+    </resultMap>
+    
+    <sql id="RegisterServerColumns">
+        NAME,
+        IP,
+        PORT,
+        PARAMS,
+        LOGIN_TIME,
+        LOGOUT_TIME,
+        ACTIVE
+    </sql>
+    
+	<insert id="insert" keyProperty="id" useGeneratedKeys="true" parameterType="RegisterServerEntity">
+        <selectKey resultType="int" keyProperty="id" order="AFTER">
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+        insert into risk_register_server
+        (
+            <include refid="RegisterServerColumns"/>
+        )
+        values
+        (
+            #{name},
+            #{ip},
+            #{port},
+            #{params},
+            sysdate(),
+            sysdate(),
+            #{active}
+        )
+    </insert>
+    
+    <update id="update" parameterType="RegisterServerEntity">
+        update risk_register_server set 
+        	NAME=#{name},
+        	IP=#{ip},
+        	PORT=#{port},
+        	PARAMS=#{params},
+        	LOGIN_TIME=#{loginTime},
+        	LOGOUT_TIME=#{logoutTime},
+        	ACTIVE=#{active}
+        where
+        	ID=#{id}
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.Integer">
+        delete from
+            risk_register_server
+        where
+            id=#{id}
+    </delete>
+
+    <select id="selectAll" resultMap="RegisterServerMap">
+        select 
+        	ID,
+		<include refid="RegisterServerColumns"/>
+        from risk_register_server
+        where ACTIVE=1
+    </select>
+    
+ 	<select id="getByName" parameterType="java.lang.String" resultMap="RegisterServerMap">
+        select 
+        ID,
+		<include refid="RegisterServerColumns"/>
+		from risk_register_server
+		where
+            name = #{name}
+    </select>
+</mapper>

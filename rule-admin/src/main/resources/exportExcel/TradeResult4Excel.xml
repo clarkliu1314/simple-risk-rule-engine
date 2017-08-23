@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xmlExport>
+    <!--导出后文件显示的名字 -->
+    <fileName>交易结果查询</fileName>
+
+    <!--sheet的名字 -->
+    <sheetName>交易结果查询</sheetName>
+
+    <!--列的宽度 -->
+    <columnWidth>30</columnWidth>
+
+    <!--第一行的名字 -->
+    <headers>
+        <header>内部订单号</header>
+        <header>商户订单号</header>
+        <header>商户号</header>
+        <header>交易类型</header>
+        <header>交易请求日期</header>
+        <header>交易确认日期</header>
+        <header>业务类型</header>
+        <header>交易金额</header>
+        <header>交易状态</header>
+        <header>处理方式</header>
+        <header>收单行ID</header>
+        <!--<header>卡种</header>-->
+        <header>信用卡号</header>
+        <header>授权号</header>
+        <header>持卡人</header>
+        <header>银行费率</header>
+        <header>修改人</header>
+        <header>修改时间</header>
+        <header>失败原因</header>
+    </headers>
+
+    <object>
+        <!--类的名字，全路径 -->
+        <objectName>
+            com.jd.payment.core.ccmis.dto.result.settlemanage.ccnocard.TradePaymentResultDTO
+        </objectName>
+        <attributes>
+            <!--要导出的属性名，必须保持一致-->
+            <attrName>tradeDn</attrName>
+            <attrName>extTradeDn</attrName>
+            <attrName>merchantNo</attrName>
+            <attrName>tradeTypeName</attrName>
+            <attrName>extTradeReqTime</attrName>
+            <attrName>confirmTradePayTime</attrName>
+            <attrName>businessTypeName</attrName>
+            <attrName>tradeAmount</attrName>
+            <attrName>tradePaymentStatusName</attrName>
+            <attrName>handleTypeName</attrName>
+            <attrName>settlementBankName</attrName>
+            <attrName>bankCardNo</attrName>
+            <attrName>authorizeNo</attrName>
+            <attrName>cardHolderName</attrName>
+            <attrName>bankFee</attrName>
+            <attrName>modified</attrName>
+            <attrName>modifiedTime</attrName>
+            <attrName>failReason</attrName>
+        </attributes>
+    </object>
+
+</xmlExport>

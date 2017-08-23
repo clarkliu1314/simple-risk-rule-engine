@@ -1,0 +1,185 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+-->
+<configuration>
+  <property>
+    <name>hbase.rootdir</name>
+    <value>hdfs://boss:9000/hbase</value>
+    <description>The directory shared by region servers and into
+    which HBase persists.  The URL should be 'fully-qualified'
+    to include the filesystem scheme.  For example, to specify the
+    HDFS directory '/hbase' where the HDFS instance's namenode is
+    running at namenode.example.org on port 9000, set this value to:
+    hdfs://namenode.example.org:9000/hbase.  By default HBase writes
+    into /tmp.  Change this configuration else all data will be lost
+    on machine restart.
+    </description>
+  </property>
+  <property>
+    <name>hbase.cluster.distributed</name>
+    <value>true</value>
+    <description>The mode the cluster will be in. Possible values are
+      false for standalone mode and true for distributed mode.  If
+      false, startup will run all HBase and ZooKeeper daemons together
+      in the one JVM.
+    </description>
+  </property>
+  <property>
+    <name>hbase.tmp.dir</name>
+    <value>/usr/hadoop/hbasetmp/hbase-${user.name}</value>
+    <description>Temporary directory on the local filesystem.
+    Change this setting to point to a location more permanent
+    than '/tmp' (The '/tmp' directory is often cleared on
+    machine restart).
+    </description>
+  </property>
+  <property>
+    <name>hbase.client.scanner.caching</name>
+    <value>4</value>
+    <description>Number of rows that will be fetched when calling next
+    on a scanner if it is not served from (local, client) memory. Higher
+    caching values will enable faster scanners but will eat up more memory
+    and some calls of next may take longer and longer times when the cache is empty.
+    Do not set this value such that the time between invocations is greater
+    than the scanner timeout; i.e. hbase.regionserver.lease.period
+    </description>
+  </property>
+  <property>
+    <name>hbase.regionserver.global.memstore.upperLimit</name>
+    <value>0.4</value>
+    <description>Maximum size of all memstores in a region server before new
+      updates are blocked and flushes are forced. Defaults to 40% of heap
+    </description>
+  </property>
+  <property>
+    <name>hbase.regionserver.global.memstore.lowerLimit</name>
+    <value>0.3</value>
+    <description>When memstores are being forced to flush to make room in
+      memory, keep flushing until we hit this mark. Defaults to 35% of heap.
+      This value equal to hbase.regionserver.global.memstore.upperLimit causes
+      the minimum possible flushing to occur when updates are blocked due to
+      memstore limiting.
+    </description>
+  </property>
+
+  <property>
+    <name>zookeeper.session.timeout</name>
+    <value>180000</value>
+    <description>ZooKeeper session timeout.
+      HBase passes this to the zk quorum as suggested maximum time for a
+      session (This setting becomes zookeeper's 'maxSessionTimeout').  See
+      http://hadoop.apache.org/zookeeper/docs/current/zookeeperProgrammers.html#ch_zkSessions
+      "The client sends a requested timeout, the server responds with the
+      timeout that it can give the client. " In milliseconds.
+    </description>
+  </property>
+  <property>
+    <name>zookeeper.znode.parent</name>
+    <value>/hbase</value>
+    <description>Root ZNode for HBase in ZooKeeper. All of HBase's ZooKeeper
+      files that are configured with a relative path will go under this node.
+      By default, all of HBase's ZooKeeper file path are configured with a
+      relative path, so they will all go under this directory unless changed.
+    </description>
+  </property>
+
+  <!--
+  The following three properties are used together to create the list of
+  host:peer_port:leader_port quorum servers for ZooKeeper.
+  -->
+  <property>
+    <name>hbase.zookeeper.quorum</name>
+    <value>boss,emp1,emp2</value>
+    <description>Comma separated list of servers in the ZooKeeper Quorum.
+    For example, "host1.mydomain.com,host2.mydomain.com,host3.mydomain.com".
+    By default this is set to localhost for local and pseudo-distributed modes
+    of operation. For a fully-distributed setup, this should be set to a full
+    list of ZooKeeper quorum servers. If HBASE_MANAGES_ZK is set in hbase-env.sh
+    this is the list of servers which we will start/stop ZooKeeper on.
+    </description>
+  </property>
+  <property>
+    <name>hbase.zookeeper.peerport</name>
+    <value>2888</value>
+    <description>Port used by ZooKeeper peers to talk to each other.
+    See http://hadoop.apache.org/zookeeper/docs/r3.1.1/zookeeperStarted.html#sc_RunningReplicatedZooKeeper
+    for more information.
+    </description>
+  </property>
+  <property>
+    <name>hbase.zookeeper.leaderport</name>
+    <value>3888</value>
+    <description>Port used by ZooKeeper for leader election.
+    See http://hadoop.apache.org/zookeeper/docs/r3.1.1/zookeeperStarted.html#sc_RunningReplicatedZooKeeper
+    for more information.
+    </description>
+  </property>
+  <!-- End of properties used to generate ZooKeeper host:port quorum list. -->
+
+  <property>
+    <name>hbase.zookeeper.property.clientPort</name>
+    <value>2181</value>
+    <description>Property from ZooKeeper's config zoo.cfg.
+    The port at which the clients will connect.
+    </description>
+  </property>
+  <property>
+    <name>hbase.defaults.for.version.skip</name>
+    <value>true</value>
+    <description>
+    Set to true to skip the 'hbase.defaults.for.version' check.
+    Setting this to true can be useful in contexts other than
+    the other side of a maven generation; i.e. running in an
+    ide.  You'll want to set this boolean to true to avoid
+    seeing the RuntimException complaint: "hbase-default.xml file
+    seems to be for and old version of HBase (@@@VERSION@@@), this
+    version is X.X.X-SNAPSHOT"
+    </description>
+  </property>
+  <property>
+    <name>dfs.support.append</name>
+    <value>true</value>
+    <description>Does HDFS allow appends to files?
+    This is an hdfs config. set in here so the hdfs client will do append support.
+    You must ensure that this config. is true serverside too when running hbase
+    (You will have to restart your cluster after setting it).
+    </description>
+  </property>
+  <property>
+    <name>hbase.regionserver.lease.period</name>
+    <value>600000</value>
+    <description>HRegion server lease period in milliseconds. Default is
+    60 seconds. Clients must report in within this period else they are
+    considered dead.src is 60000
+	</description>
+  </property>
+  <property>
+    <name>hbase.rpc.timeout</name>
+    <value>600000</value>
+    <description>src is 60000</description>
+  </property>
+  
+  <property>
+   <name>hbase.coprocessor.region.classes</name>
+   <value>org.apache.hadoop.hbase.coprocessor.AggregateImplementation</value>
+  </property>
+ 
+</configuration>

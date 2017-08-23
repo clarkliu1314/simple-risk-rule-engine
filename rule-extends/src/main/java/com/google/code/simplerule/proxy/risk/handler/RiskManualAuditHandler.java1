@@ -1,0 +1,112 @@
+package com.google.code.simplerule.proxy.risk.handler;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.annotation.Resource;
+
+import org.apache.hadoop.hbase.client.Put;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+
+import com.google.code.simplerule.core.EmailConfig;
+import com.google.code.simplerule.core.EmailRunnable;
+import com.google.code.simplerule.core.factor.FactorField;
+import com.google.code.simplerule.core.factor.field.StringFactorField;
+import com.google.code.simplerule.core.processor.RiskCode;
+import com.google.code.simplerule.core.result.RiskResult;
+import com.google.code.simplerule.core.rule.RiskHandler;
+import com.google.code.simplerule.core.rule.RiskRule;
+import com.google.code.simplerule.core.rule.RuleContext;
+import com.google.code.simplerule.proxy.risk.entity.EmailEntity;
+import com.google.code.simplerule.proxy.risk.entity.ManualAuditDataEntity;
+import com.google.code.simplerule.proxy.risk.enums.RiskAuditStatusEnum;
+import com.google.code.simplerule.proxy.risk.service.EmailService;
+import com.google.code.simplerule.proxy.risk.service.ManualAuditDataService;
+
+/**
+ * @author sunny
+ * @since 2013-5-14
+ * @version 1.0.0
+ * @comment 人工审核处理,配置此处理器默认生效，不配置不生效，没有启用禁用选项。
+ */
+@Service
+public class RiskManualAuditHandler implements RiskHandler {
+
+	@Resource
+	private ManualAuditDataService manualAuditService;
+	@Resource
+	private EmailService emailConfigService;
+
+	/**
+	 * 处理器参数
+	 */
+	private Object[] arguments;
+
+	/**
+	 * 处理器参数类型
+	 */
+	protected final FactorField[] fas = new FactorField[] { new StringFactorField(
+			"to") };
+
+	@Override
+	public RiskResult execute(RuleContext context, RiskResult result) {
+		//获取参数和命中的规则，写入数据库，进入人工审核流程
+		ManualAuditDataEntity entity = new ManualAuditDataEntity();
+		entity.setInterfaceName(context.getInterfaceName());
+		entity.setRuleNumber(context.getCurrentRule().getNumber());
+		entity.setRuleTrack(context.getRuleTrack());
+		entity.setAuditStatus(String.valueOf(RiskAuditStatusEnum.WaitForAudit.toCode()));
+		entity.setAuditBackup("此记录由风控系统创建，供人工审核使用。");
+		entity.setOperator("system");
+		entity.setParam(context.getParam());
+		manualAuditService.insertData(entity);
+		
+		// 发送邮件
+		if (arguments[0].toString() != null) {
+			// 获取邮件配置
+			EmailConfig config = emailConfigService.selectEmailConfig();
+
+			// 设置邮件
+			EmailEntity emailEntity = new EmailEntity();
+			BeanUtils.copyProperties(config, emailEntity);
+			emailEntity.setTo(arguments[0].toString());
+			emailEntity.setSubject("网银在线风险控制人工审核");
+			emailEntity.setText(context.getRuleTrack());
+
+			// 启动线程发送邮件
+			EmailRunnable runnable = new EmailRunnable(emailEntity);
+			Thread thread = new Thread(runnable);
+			thread.start();
+		}
+
+		// 返回人工审核
+		RiskResult r = new RiskResult();
+		r.setCode(RiskCode.ManualAudit);
+		r.setDescription("人工审核");
+		return r;
+	}
+
+	@Override
+	public String getName() {
+		return "人工审核";
+	}
+
+	@Override
+	public Object[] getArguments() {
+		return arguments;
+	}
+
+	@Override
+	public void setArguments(Object... objects) {
+		arguments = objects;
+	}
+
+	@Override
+	public FactorField[] getArgumentFields() {
+		return fas;
+	}
+
+}

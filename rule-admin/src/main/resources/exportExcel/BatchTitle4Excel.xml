@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xmlExport>
+    <!--导出后文件显示的名字 -->
+    <fileName>批次查询</fileName>
+
+    <!--sheet的名字 -->
+    <sheetName>批次查询</sheetName>
+
+    <!--列的宽度 -->
+    <columnWidth>30</columnWidth>
+
+    <!--第一行的名字 -->
+    <headers>
+        <header>批次查询</header>
+        <header>商户编号</header>
+        <header>商户名称</header>
+        <header>开始时间</header>
+        <header>结束时间</header>
+        <header>应收总金额</header>
+        <header>银行手续费</header>
+        <header>应收净额</header>
+        <header>实收金额</header>
+        <header>审核状态</header>
+    </headers>
+
+    <object>
+        <!--类的名字，全路径 -->
+        <objectName>
+            com.jd.payment.core.ccmis.dto.result.settlemanage.ccnocard.BatchFundTitleResultDTO
+        </objectName>
+        <attributes>
+            <!--要导出的属性名，必须保持一致-->
+            <attrName>batchFundTitleId</attrName>
+            <attrName>merchantId</attrName>
+            <attrName>merchantName</attrName>
+            <attrName>beginTime</attrName>
+            <attrName>endTime</attrName>
+            <attrName>arAmt</attrName>
+            <attrName>bankServiceAmt</attrName>
+            <attrName>receivedAmt</attrName>
+            <attrName>realReceivedAmt</attrName>
+            <attrName>auditStatusName</attrName>
+            <attrName>sentStatusName</attrName>
+        </attributes>
+    </object>
+
+</xmlExport>

@@ -1,0 +1,195 @@
+package com.google.code.simplerule.proxy.risk.service;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.google.code.simplerule.ccmis.controller.common.PageTagResultDTO;
+import com.google.code.simplerule.hbase.dao.RiskLogDao;
+import com.google.code.simplerule.hbase.entity.ResultEntity;
+import com.google.code.simplerule.hbase.entity.RiskLogEntity;
+
+@Service
+public class RiskLogService {
+	
+	@Autowired
+	private RiskLogDao riskLogDao;
+
+	public PageTagResultDTO<RiskLogEntity> query(Map<String, Object> paramMap) {
+		
+		PageTagResultDTO<RiskLogEntity> pageTagResultDTO = new PageTagResultDTO<RiskLogEntity>();
+		
+		paramMap.put("pageSize", 20);
+        
+	    ResultEntity resultEntity = riskLogDao.query(paramMap);
+	    
+        pageTagResultDTO.setList(resultEntity.getResultList());
+        pageTagResultDTO.setLastRow(resultEntity.getLastRow());
+        
+		return pageTagResultDTO;
+	}
+	
+	public HSSFWorkbook query4Excel(Map<String, Object> paramMap) 
+	{
+		
+		HSSFWorkbook wb = new HSSFWorkbook();
+		HSSFSheet sheet = wb.createSheet("审核日志");
+		HSSFRow row = sheet.createRow((int) 0);
+		HSSFCellStyle style = wb.createCellStyle();
+		style.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+
+		paramMap.put("pageSize", 5000);
+		
+		List<RiskLogEntity> resultList = riskLogDao.query(paramMap).getResultList();
+		
+		makeUpExcelTitle(row, style);
+		makeUpExcelValue(row, resultList, sheet);
+		
+	
+		return wb;
+	}
+	
+	private void makeUpExcelValue(HSSFRow row, List<RiskLogEntity> resultList, HSSFSheet sheet)
+	{
+		for (int i = 0; i < resultList.size(); i++)
+		{
+			row = sheet.createRow((int) i + 1);
+			
+			RiskLogEntity rle = (RiskLogEntity) resultList.get(i);
+			
+			row.createCell(0).setCellValue(rle.getServiceName());
+			row.createCell(1).setCellValue(rle.getBusinessType());
+			row.createCell(2).setCellValue(rle.getBankCardNo());
+			row.createCell(3).setCellValue(rle.getCardHolderName());
+			row.createCell(4).setCellValue(rle.getIdCardType());
+			row.createCell(5).setCellValue(rle.getIdCardNo());
+			row.createCell(6).setCellValue(rle.getTradeAmount());
+			row.createCell(7).setCellValue(rle.getTradeRequestId());
+			row.createCell(8).setCellValue(rle.getExtRequestSN());
+			row.createCell(9).setCellValue(rle.getExtTradeDN());
+			row.createCell(10).setCellValue(rle.getPayProduct());
+			row.createCell(11).setCellValue(rle.getCardType());
+			row.createCell(12).setCellValue(rle.getPayWay());
+			row.createCell(13).setCellValue(rle.getMobile());
+			row.createCell(14).setCellValue(rle.getMerchantNo());
+			row.createCell(15).setCellValue(rle.getCardExpireDate());
+			row.createCell(16).setCellValue(rle.getCurrencyType());
+			row.createCell(17).setCellValue(rle.getAccountNo());
+			row.createCell(18).setCellValue(rle.getCode());
+			row.createCell(19).setCellValue(rle.getExecuteTime());
+			row.createCell(20).setCellValue(rle.getDescription());
+			row.createCell(21).setCellValue(rle.getExtendInfo());
+			row.createCell(22).setCellValue(rle.getReason());
+			row.createCell(23).setCellValue(rle.getCreateDate());
+		}
+	}
+	 
+	private void makeUpExcelTitle(HSSFRow row, HSSFCellStyle style)
+	{
+		HSSFCell titleCell = row.createCell(0);
+		titleCell.setCellValue("业务名称");
+		titleCell.setCellStyle(style);
+		
+		titleCell = row.createCell(1);
+		titleCell.setCellValue("业务类型");
+		titleCell.setCellStyle(style);
+		
+		titleCell = row.createCell(2);
+		titleCell.setCellValue("银行卡号");
+		titleCell.setCellStyle(style);
+		
+		titleCell = row.createCell(3);
+		titleCell.setCellValue("持卡人姓名");
+		titleCell.setCellStyle(style);
+		
+		titleCell = row.createCell(4);
+		titleCell.setCellValue("证件类型");
+		titleCell.setCellStyle(style);
+		
+		titleCell = row.createCell(5);
+		titleCell.setCellValue("证件编号");
+		titleCell.setCellStyle(style);
+		
+		titleCell = row.createCell(6);
+		titleCell.setCellValue("交易金额");
+		titleCell.setCellStyle(style);
+		
+		titleCell = row.createCell(7);
+		titleCell.setCellValue("交易请求ID");
+		titleCell.setCellStyle(style);
+		
+		titleCell = row.createCell(8);
+		titleCell.setCellValue("外部请求流水号");
+		titleCell.setCellStyle(style);
+		
+		titleCell = row.createCell(9);
+		titleCell.setCellValue("外部交易唯一标识");
+		titleCell.setCellStyle(style);
+		
+		titleCell = row.createCell(10);
+		titleCell.setCellValue("支付产品");
+		titleCell.setCellStyle(style);
+		
+		titleCell = row.createCell(11);
+		titleCell.setCellValue("卡类型");
+		titleCell.setCellStyle(style);
+		
+		titleCell = row.createCell(12);
+		titleCell.setCellValue("支付方式");
+		titleCell.setCellStyle(style);
+		
+		titleCell = row.createCell(13);
+		titleCell.setCellValue("电话号码");
+		titleCell.setCellStyle(style);
+		
+		titleCell = row.createCell(14);
+		titleCell.setCellValue("商户编号");
+		titleCell.setCellStyle(style);
+		
+		titleCell = row.createCell(15);
+		titleCell.setCellValue("卡有效期");
+		titleCell.setCellStyle(style);
+		
+		titleCell = row.createCell(16);
+		titleCell.setCellValue("币种");
+		titleCell.setCellStyle(style);
+		
+		titleCell = row.createCell(17);
+		titleCell.setCellValue("会员号");
+		titleCell.setCellStyle(style);
+		
+		titleCell = row.createCell(18);
+		titleCell.setCellValue("状态码");
+		titleCell.setCellStyle(style);
+		
+		titleCell = row.createCell(19);
+		titleCell.setCellValue("执行时间");
+		titleCell.setCellStyle(style);
+		
+		titleCell = row.createCell(20);
+		titleCell.setCellValue("描述");
+		titleCell.setCellStyle(style);
+		
+		titleCell = row.createCell(21);
+		titleCell.setCellValue("扩展信息");
+		titleCell.setCellStyle(style);
+		
+		titleCell = row.createCell(22);
+		titleCell.setCellValue("原因");
+		titleCell.setCellStyle(style);
+		
+		titleCell = row.createCell(23);
+		titleCell.setCellValue("创建日期");
+		titleCell.setCellStyle(style);
+	}
+}

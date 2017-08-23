@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="SystemMapper">
+	<resultMap id="SystemMap" type="SystemEntity">
+        <result column="SYSTEM_NAME" property="systemName" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="STATUS" property="status" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+    </resultMap>
+    
+    <sql id="SystemColumns">
+    	SYSTEM_NAME,
+        DESCRIPTION,
+        STATUS
+    </sql>
+    
+	<insert id="insert" useGeneratedKeys="true" parameterType="SystemEntity">
+        insert into risk_system
+        (
+            <include refid="SystemColumns"/>
+        )
+        values
+        (
+            #{systemName},
+            #{description},
+            #{status}
+        )
+    </insert>
+
+    <delete id="deleteByName" parameterType="java.lang.String">
+        delete from
+            risk_system
+        where
+            SYSTEM_NAME=#{name}
+    </delete>
+
+    <select id="selectAll" resultMap="SystemMap">
+        select 
+		<include refid="SystemColumns"/>
+        from risk_system
+    </select>
+
+ 	<select id="getByName" parameterType="java.lang.String" resultMap="SystemMap">
+        select 
+		<include refid="SystemColumns"/>
+		from risk_system
+		where
+            SYSTEM_NAME=#{name}
+    </select>
+</mapper>
